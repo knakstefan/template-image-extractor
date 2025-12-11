@@ -50,12 +50,14 @@ For each visual asset, return PRECISE bounding box as percentages (0-100):
 - y_percent: top edge where image pixels BEGIN
 - width_percent: exact width of visual content
 - height_percent: exact height of visual content
-- label: descriptive name
+- label: descriptive display name (e.g., "Company Logo", "Hero Image")
+- filename: file-friendly name in kebab-case, lowercase, no special characters (e.g., "company-logo", "hero-image")
 
 CRITICAL: 
 - All percentages MUST be between 0 and 100
 - Boxes must TIGHTLY fit the actual image content - no whitespace or padding
 - For icons, crop to the icon graphic only, not its container
+- filename must be valid for file systems: only lowercase letters, numbers, and hyphens
 
 Return ONLY valid JSON:
 {"regions": [...], "confidence": 0.0-1.0}`;
@@ -181,6 +183,7 @@ Return ONLY valid JSON:
           width: pixelWidth,
           height: pixelHeight,
           label: region.label || `Image ${index + 1}`,
+          filename: region.filename || `image-${index + 1}`,
         };
       });
 
