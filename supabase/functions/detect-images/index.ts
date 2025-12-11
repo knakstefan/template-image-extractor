@@ -155,10 +155,10 @@ Rules:
     }
 
     // Convert percentages to pixel coordinates and filter small regions
-    // Apply a small inset correction to tighten detected regions (AI tends to overestimate)
     const minWidthPercent = 2;
     const minHeightPercent = 2;
-    const insetPercent = 0.5; // Tighten each edge by 0.5%
+    
+    console.log("Raw AI percentages:", JSON.stringify(parsed.regions, null, 2));
     
     const regions = (parsed.regions || [])
       .filter((region: any) => {
@@ -166,18 +166,20 @@ Rules:
         return region.width_percent >= minWidthPercent && region.height_percent >= minHeightPercent;
       })
       .map((region: any, index: number) => {
-        // Apply inset to tighten the bounding box
-        const adjustedX = region.x_percent + insetPercent;
-        const adjustedY = region.y_percent + insetPercent;
-        const adjustedWidth = Math.max(region.width_percent - (insetPercent * 2), 1);
-        const adjustedHeight = Math.max(region.height_percent - (insetPercent * 2), 1);
+        // Direct conversion without inset correction to see raw AI output
+        const pixelX = Math.round((region.x_percent / 100) * width);
+        const pixelY = Math.round((region.y_percent / 100) * height);
+        const pixelWidth = Math.round((region.width_percent / 100) * width);
+        const pixelHeight = Math.round((region.height_percent / 100) * height);
+        
+        console.log(`Region ${index} "${region.label}": ${region.x_percent}%,${region.y_percent}% ${region.width_percent}%x${region.height_percent}% -> ${pixelX},${pixelY} ${pixelWidth}x${pixelHeight}px`);
         
         return {
           id: `detected-${index}-${Date.now()}`,
-          x: Math.round((adjustedX / 100) * width),
-          y: Math.round((adjustedY / 100) * height),
-          width: Math.round((adjustedWidth / 100) * width),
-          height: Math.round((adjustedHeight / 100) * height),
+          x: pixelX,
+          y: pixelY,
+          width: pixelWidth,
+          height: pixelHeight,
           label: region.label || `Image ${index + 1}`,
         };
       });
