@@ -31,26 +31,24 @@ serve(async (req) => {
 
     console.log("Analyzing image for embedded images...", { width, height });
 
-    const prompt = `Analyze this screenshot/mockup and identify ONLY substantial embedded images, photos, or illustrations that are CONTENT images (not UI elements).
+    const prompt = `Analyze this screenshot/mockup and identify ALL visual assets including images, icons, and logos.
 
-INCLUDE ONLY:
+INCLUDE:
 - Product photos and images
 - Hero/banner images
 - Profile pictures and avatars
 - Content thumbnails
-- Illustrations that are main visual content
-- Any photograph or substantial graphic
+- Illustrations and graphics
+- Icons (UI icons, social media icons, app icons, navigation icons)
+- Logos (company logos, brand marks, wordmarks, favicon-style logos)
+- Any visual element that is not pure text
 
-EXCLUDE (CRITICAL - do not detect these):
-- UI icons of any kind (arrows, chevrons, hamburger menus, close buttons)
-- Social media icons (Twitter/X, Facebook, YouTube, Instagram, LinkedIn)
-- Small decorative icons and symbols
-- Button icons and navigation elements
-- Logo icons that are very small
-- Any element that appears to be a UI control
-- Elements smaller than 5% of the total image dimensions
+EXCLUDE:
+- Pure text elements without graphics
+- Background patterns or solid color fills
+- Elements smaller than 2% of the total image dimensions
 
-For each SUBSTANTIAL content image found, provide TIGHT bounding box coordinates as percentages.
+For each visual asset found, provide TIGHT bounding box coordinates as percentages.
 
 Return JSON:
 {
@@ -60,16 +58,16 @@ Return JSON:
       "y_percent": <top edge 0-100>,
       "width_percent": <width 0-100>,
       "height_percent": <height 0-100>,
-      "label": "<descriptive label>"
+      "label": "<descriptive label like 'Logo', 'Icon - Twitter', 'Product Image'>"
     }
   ],
   "confidence": <0-1>
 }
 
 Rules:
-- Only include images that are at least 5% of total dimensions in BOTH width AND height
-- Bounding boxes must TIGHTLY fit the actual image content
-- If no substantial images found, return empty regions array
+- Include elements that are at least 2% of total dimensions in BOTH width AND height
+- Bounding boxes must TIGHTLY fit the actual visual content
+- If no visual assets found, return empty regions array
 - Return ONLY valid JSON, no other text`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
@@ -147,8 +145,8 @@ Rules:
     }
 
     // Convert percentages to pixel coordinates and filter small regions
-    const minWidthPercent = 5;
-    const minHeightPercent = 5;
+    const minWidthPercent = 2;
+    const minHeightPercent = 2;
     
     const regions = (parsed.regions || [])
       .filter((region: any) => {
