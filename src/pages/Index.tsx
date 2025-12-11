@@ -47,13 +47,28 @@ export default function Index() {
 
     setIsDetecting(true);
     try {
+      // Use original dimensions for more accurate detection, then scale to display
       const { data, error } = await supabase.functions.invoke("detect-images", {
         body: {
           imageBase64: imageSrc,
-          width: displayDimensions.width,
-          height: displayDimensions.height,
+          width: originalDimensions.width,
+          height: originalDimensions.height,
         },
       });
+
+      // Scale detected regions from original to display coordinates
+      if (data.regions && data.regions.length > 0) {
+        const scaleX = displayDimensions.width / originalDimensions.width;
+        const scaleY = displayDimensions.height / originalDimensions.height;
+        
+        data.regions = data.regions.map((region: any) => ({
+          ...region,
+          x: Math.round(region.x * scaleX),
+          y: Math.round(region.y * scaleY),
+          width: Math.round(region.width * scaleX),
+          height: Math.round(region.height * scaleY),
+        }));
+      }
 
       if (error) throw error;
 
@@ -74,7 +89,7 @@ export default function Index() {
     } finally {
       setIsDetecting(false);
     }
-  }, [imageSrc, displayDimensions, resetRegions]);
+  }, [imageSrc, originalDimensions, displayDimensions, resetRegions]);
 
   const handleDownloadSingle = useCallback(
     async (regionId: string) => {
