@@ -182,125 +182,12 @@ Return ONLY valid JSON:
         };
       });
 
-    console.log("Initial detection found regions:", regions.length);
-
-    // Skip refinement if no regions found
-    if (regions.length === 0) {
-      return new Response(
-        JSON.stringify({ regions: [], confidence: parsed.confidence || 0.8 }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // PASS 2: Refinement - ask AI to review and correct bounding boxes
-    console.log("Starting refinement pass...");
-    
-    const regionsForReview = regions.map((r: any) => ({
-      label: r.label,
-      x_percent: ((r.x / width) * 100).toFixed(2),
-      y_percent: ((r.y / height) * 100).toFixed(2),
-      width_percent: ((r.width / width) * 100).toFixed(2),
-      height_percent: ((r.height / height) * 100).toFixed(2),
-    }));
-
-    const refinementPrompt = `I detected these bounding boxes for visual elements in this image:
-
-${JSON.stringify(regionsForReview, null, 2)}
-
-Review EACH bounding box carefully. For boxes that are IMPRECISE, provide CORRECTED coordinates.
-
-A box is imprecise if it:
-- Includes whitespace/padding around the actual image content
-- Cuts off part of the image
-- Is misaligned or doesn't fit tightly
-
-For EACH region, respond with the CORRECTED coordinates (or same if already perfect):
-- Use percentages with 2 decimal places (e.g., 45.75)
-- Ensure boxes TIGHTLY wrap the visual content with NO extra space
-
-Return ONLY valid JSON:
-{"corrections": [{"label": "...", "x_percent": 0.00, "y_percent": 0.00, "width_percent": 0.00, "height_percent": 0.00}]}`;
-
-    const refinementResponse = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          {
-            role: "user",
-            content: [
-              { type: "text", text: refinementPrompt },
-              { type: "image_url", image_url: { url: imageBase64 } },
-            ],
-          },
-        ],
-      }),
-    });
-
-    let finalRegions = regions;
-
-    if (refinementResponse.ok) {
-      const refinementData = await refinementResponse.json();
-      const refinementContent = refinementData.choices?.[0]?.message?.content;
-      
-      if (refinementContent) {
-        console.log("Refinement response:", refinementContent);
-        
-        try {
-          const jsonMatch = refinementContent.match(/```(?:json)?\s*([\s\S]*?)\s*```/) || [null, refinementContent];
-          const jsonStr = jsonMatch[1] || refinementContent;
-          const refinementParsed = JSON.parse(jsonStr.trim());
-          
-          if (refinementParsed.corrections && Array.isArray(refinementParsed.corrections)) {
-            // Apply corrections by matching labels
-            finalRegions = regions.map((region: any) => {
-              const correction = refinementParsed.corrections.find(
-                (c: any) => c.label?.toLowerCase() === region.label?.toLowerCase()
-              );
-              
-              if (correction) {
-                const correctedX = Math.round((correction.x_percent / 100) * width);
-                const correctedY = Math.round((correction.y_percent / 100) * height);
-                const correctedWidth = Math.round((correction.width_percent / 100) * width);
-                const correctedHeight = Math.round((correction.height_percent / 100) * height);
-                
-                // Validate correction is within bounds
-                if (correctedX >= 0 && correctedY >= 0 && 
-                    correctedX + correctedWidth <= width && 
-                    correctedY + correctedHeight <= height &&
-                    correctedWidth > 0 && correctedHeight > 0) {
-                  console.log(`Applied correction for "${region.label}": (${region.x},${region.y}) -> (${correctedX},${correctedY})`);
-                  return {
-                    ...region,
-                    x: correctedX,
-                    y: correctedY,
-                    width: correctedWidth,
-                    height: correctedHeight,
-                  };
-                }
-              }
-              return region;
-            });
-          }
-        } catch (refineError) {
-          console.error("Failed to parse refinement response:", refineError);
-          // Keep original regions if refinement fails
-        }
-      }
-    } else {
-      console.warn("Refinement pass failed, using initial detection");
-    }
-
-    console.log("Final regions after refinement:", finalRegions.length);
+    console.log("Detected regions:", regions.length);
 
     return new Response(
       JSON.stringify({
-        regions: finalRegions,
-        confidence: parsed.confidence || 0.85,
+        regions,
+        confidence: parsed.confidence || 0.8,
       }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
