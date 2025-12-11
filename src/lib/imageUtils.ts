@@ -46,6 +46,10 @@ export async function cropImage(
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Could not get canvas context");
 
+  // Enable high-quality image rendering
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+
   ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
 
   return new Promise((resolve, reject) => {
@@ -69,6 +73,7 @@ export async function downloadBlob(blob: Blob, filename: string) {
 
 export async function downloadAllAsZip(
   imageSrc: string,
+  originalFile: File,
   regions: CropRegion[],
   originalWidth: number,
   originalHeight: number,
@@ -77,6 +82,11 @@ export async function downloadAllAsZip(
 ): Promise<void> {
   const zip = new JSZip();
 
+  // Add the original file directly - preserves 100% quality
+  const extension = originalFile.name.split('.').pop()?.toLowerCase() || 'png';
+  zip.file(`template.${extension}`, originalFile);
+
+  // Add all cropped regions with high-quality rendering
   for (let i = 0; i < regions.length; i++) {
     const region = regions[i];
     const blob = await cropImage(
