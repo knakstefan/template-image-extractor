@@ -104,12 +104,13 @@ export default function Index() {
   );
 
   const handleDownloadAll = useCallback(async () => {
-    if (!imageSrc || regions.length === 0) return;
+    if (!imageSrc || !imageFile || regions.length === 0) return;
 
     try {
       toast.loading("Creating ZIP file...");
       await downloadAllAsZip(
         imageSrc,
+        imageFile,
         regions,
         originalDimensions.width,
         originalDimensions.height,
@@ -123,7 +124,7 @@ export default function Index() {
       toast.dismiss();
       toast.error("Failed to create ZIP file");
     }
-  }, [imageSrc, regions, originalDimensions, displayDimensions]);
+  }, [imageSrc, imageFile, regions, originalDimensions, displayDimensions]);
 
   const handleReset = useCallback(() => {
     setImageFile(null);
