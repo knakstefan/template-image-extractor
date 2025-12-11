@@ -58,8 +58,8 @@ export function ImageUploader({ onImageSelect, disabled }: ImageUploaderProps) {
       className={cn(
         "relative flex flex-col items-center justify-center w-full min-h-[400px] rounded-xl border-2 border-dashed transition-all duration-300 cursor-pointer group",
         isDragging
-          ? "border-primary bg-primary/5 scale-[1.02]"
-          : "border-border hover:border-primary/50 hover:bg-muted/50",
+          ? "border-primary bg-primary/10 scale-[1.02] shadow-[0_0_30px_hsl(75,100%,50%,0.15)]"
+          : "border-border hover:border-primary/60 hover:bg-card/80",
         disabled && "pointer-events-none opacity-50"
       )}
     >
