@@ -97,10 +97,11 @@ export async function downloadAllAsZip(
       displayWidth,
       displayHeight
     );
-    const filename = region.label || `crop-${i + 1}.png`;
+    const filename = region.filename || region.label || `crop-${i + 1}`;
     zip.file(filename.endsWith(".png") ? filename : `${filename}.png`, blob);
   }
 
   const zipBlob = await zip.generateAsync({ type: "blob" });
-  downloadBlob(zipBlob, "cropped-images.zip");
+  const baseName = originalFile.name.replace(/\.[^/.]+$/, "");
+  downloadBlob(zipBlob, `${baseName}-cropped.zip`);
 }

@@ -93,8 +93,8 @@ export default function Index() {
           displayDimensions.width,
           displayDimensions.height
         );
-        const filename = region.label || `crop-${regions.indexOf(region) + 1}`;
-        downloadBlob(blob, `${filename}.png`);
+        const filename = region.filename || region.label || `crop-${regions.indexOf(region) + 1}`;
+        downloadBlob(blob, filename.endsWith('.png') ? filename : `${filename}.png`);
         toast.success("Image downloaded!");
       } catch (error) {
         console.error("Download error:", error);

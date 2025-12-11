@@ -5,6 +5,7 @@ export interface CropRegion {
   width: number;
   height: number;
   label?: string;
+  filename?: string;
 }
 
 export interface DetectionResult {
