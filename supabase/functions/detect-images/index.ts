@@ -48,16 +48,26 @@ EXCLUDE:
 - Background patterns or solid color fills
 - Elements smaller than 2% of the total image dimensions
 
-For each visual asset found, provide TIGHT bounding box coordinates as percentages.
+For each visual asset found, provide PRECISE bounding box coordinates as percentages:
+
+CRITICAL PRECISION RULES:
+- Measure from the EXACT pixel where visual content BEGINS (not whitespace, margins, or padding)
+- For images with drop shadows, crop to the SOLID CONTENT only, NOT the shadow
+- For rounded corner images, use the rectangular bounds that contain all visible pixels of the actual image
+- Do NOT include any surrounding whitespace, borders, or UI chrome
+- Double-check: left_edge + width should equal right_edge exactly
+- PREFER SLIGHTLY TIGHTER crops over loose ones - it's better to crop a tiny bit into content than to include extra whitespace
+- For photos/images: find where the actual image pixels start and end
+- For icons: crop to the icon graphic itself, not the touch target or container
 
 Return JSON:
 {
   "regions": [
     {
-      "x_percent": <left edge 0-100>,
-      "y_percent": <top edge 0-100>,
-      "width_percent": <width 0-100>,
-      "height_percent": <height 0-100>,
+      "x_percent": <left edge 0-100, precise to 2 decimals>,
+      "y_percent": <top edge 0-100, precise to 2 decimals>,
+      "width_percent": <width 0-100, precise to 2 decimals>,
+      "height_percent": <height 0-100, precise to 2 decimals>,
       "label": "<descriptive label like 'Logo', 'Icon - Twitter', 'Product Image'>"
     }
   ],
@@ -66,7 +76,7 @@ Return JSON:
 
 Rules:
 - Include elements that are at least 2% of total dimensions in BOTH width AND height
-- Bounding boxes must TIGHTLY fit the actual visual content
+- Bounding boxes must TIGHTLY fit the actual visual content with NO extra padding
 - If no visual assets found, return empty regions array
 - Return ONLY valid JSON, no other text`;
 
@@ -145,22 +155,32 @@ Rules:
     }
 
     // Convert percentages to pixel coordinates and filter small regions
+    // Apply a small inset correction to tighten detected regions (AI tends to overestimate)
     const minWidthPercent = 2;
     const minHeightPercent = 2;
+    const insetPercent = 0.5; // Tighten each edge by 0.5%
     
     const regions = (parsed.regions || [])
       .filter((region: any) => {
-        // Filter out regions smaller than 5% in either dimension
+        // Filter out regions smaller than 2% in either dimension
         return region.width_percent >= minWidthPercent && region.height_percent >= minHeightPercent;
       })
-      .map((region: any, index: number) => ({
-        id: `detected-${index}-${Date.now()}`,
-        x: Math.round((region.x_percent / 100) * width),
-        y: Math.round((region.y_percent / 100) * height),
-        width: Math.round((region.width_percent / 100) * width),
-        height: Math.round((region.height_percent / 100) * height),
-        label: region.label || `Image ${index + 1}`,
-      }));
+      .map((region: any, index: number) => {
+        // Apply inset to tighten the bounding box
+        const adjustedX = region.x_percent + insetPercent;
+        const adjustedY = region.y_percent + insetPercent;
+        const adjustedWidth = Math.max(region.width_percent - (insetPercent * 2), 1);
+        const adjustedHeight = Math.max(region.height_percent - (insetPercent * 2), 1);
+        
+        return {
+          id: `detected-${index}-${Date.now()}`,
+          x: Math.round((adjustedX / 100) * width),
+          y: Math.round((adjustedY / 100) * height),
+          width: Math.round((adjustedWidth / 100) * width),
+          height: Math.round((adjustedHeight / 100) * height),
+          label: region.label || `Image ${index + 1}`,
+        };
+      });
 
     console.log("Detected regions:", regions.length);
 
