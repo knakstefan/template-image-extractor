@@ -11,6 +11,7 @@ interface CropOverlayProps {
   onDelete: () => void;
   containerBounds: DOMRect | null;
   index: number;
+  zoomLevel: number;
 }
 
 type ResizeHandle = "nw" | "ne" | "sw" | "se" | "n" | "s" | "e" | "w";
@@ -23,6 +24,7 @@ export function CropOverlay({
   onDelete,
   containerBounds,
   index,
+  zoomLevel,
 }: CropOverlayProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [isResizing, setIsResizing] = useState<ResizeHandle | null>(null);
@@ -49,8 +51,9 @@ export function CropOverlay({
       }
 
       const handleMouseMove = (e: MouseEvent) => {
-        const dx = e.clientX - startPos.current.x;
-        const dy = e.clientY - startPos.current.y;
+        // Adjust delta by zoom level - mouse moves in screen space but region is in image space
+        const dx = (e.clientX - startPos.current.x) / zoomLevel;
+        const dy = (e.clientY - startPos.current.y) / zoomLevel;
 
         if (handle) {
           let newX = startPos.current.rx;
@@ -77,8 +80,11 @@ export function CropOverlay({
             onUpdate({ x: newX, y: newY, width: newW, height: newH });
           }
         } else {
-          const maxX = containerBounds ? containerBounds.width - region.width : Infinity;
-          const maxY = containerBounds ? containerBounds.height - region.height : Infinity;
+          // Adjust container bounds for zoom level
+          const adjustedWidth = containerBounds ? containerBounds.width / zoomLevel : Infinity;
+          const adjustedHeight = containerBounds ? containerBounds.height / zoomLevel : Infinity;
+          const maxX = adjustedWidth - region.width;
+          const maxY = adjustedHeight - region.height;
           
           onUpdate({
             x: Math.max(0, Math.min(maxX, startPos.current.rx + dx)),
@@ -97,7 +103,7 @@ export function CropOverlay({
       window.addEventListener("mousemove", handleMouseMove);
       window.addEventListener("mouseup", handleMouseUp);
     },
-    [region, onSelect, onUpdate, containerBounds]
+    [region, onSelect, onUpdate, containerBounds, zoomLevel]
   );
 
   const handles: { position: ResizeHandle; className: string }[] = [
