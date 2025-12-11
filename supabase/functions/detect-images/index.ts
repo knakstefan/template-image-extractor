@@ -31,31 +31,46 @@ serve(async (req) => {
 
     console.log("Analyzing image for embedded images...", { width, height });
 
-    const prompt = `Analyze this screenshot/mockup image and identify all distinct embedded images, photos, or visual content areas within it.
+    const prompt = `Analyze this screenshot/mockup and identify ONLY substantial embedded images, photos, or illustrations that are CONTENT images (not UI elements).
 
-For each embedded image you find, provide the bounding box coordinates as percentages of the total image dimensions.
+INCLUDE ONLY:
+- Product photos and images
+- Hero/banner images
+- Profile pictures and avatars
+- Content thumbnails
+- Illustrations that are main visual content
+- Any photograph or substantial graphic
 
-Return your response as a JSON object with this exact structure:
+EXCLUDE (CRITICAL - do not detect these):
+- UI icons of any kind (arrows, chevrons, hamburger menus, close buttons)
+- Social media icons (Twitter/X, Facebook, YouTube, Instagram, LinkedIn)
+- Small decorative icons and symbols
+- Button icons and navigation elements
+- Logo icons that are very small
+- Any element that appears to be a UI control
+- Elements smaller than 5% of the total image dimensions
+
+For each SUBSTANTIAL content image found, provide TIGHT bounding box coordinates as percentages.
+
+Return JSON:
 {
   "regions": [
     {
-      "x_percent": <number 0-100>,
-      "y_percent": <number 0-100>,
-      "width_percent": <number 0-100>,
-      "height_percent": <number 0-100>,
+      "x_percent": <left edge 0-100>,
+      "y_percent": <top edge 0-100>,
+      "width_percent": <width 0-100>,
+      "height_percent": <height 0-100>,
       "label": "<descriptive label>"
     }
   ],
-  "confidence": <number 0-1>
+  "confidence": <0-1>
 }
 
 Rules:
-- Only identify actual images/photos/graphics, not UI elements like buttons or text
-- Include product images, photos, icons, logos, illustrations, thumbnails
-- Exclude navigation bars, text blocks, and empty spaces
-- Be precise with bounding boxes - they should tightly fit each image
-- If no images are found, return an empty regions array
-- Return ONLY the JSON, no other text`;
+- Only include images that are at least 5% of total dimensions in BOTH width AND height
+- Bounding boxes must TIGHTLY fit the actual image content
+- If no substantial images found, return empty regions array
+- Return ONLY valid JSON, no other text`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -64,7 +79,7 @@ Rules:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-pro",
         messages: [
           {
             role: "user",
@@ -131,15 +146,23 @@ Rules:
       );
     }
 
-    // Convert percentages to pixel coordinates
-    const regions = (parsed.regions || []).map((region: any, index: number) => ({
-      id: `detected-${index}-${Date.now()}`,
-      x: Math.round((region.x_percent / 100) * width),
-      y: Math.round((region.y_percent / 100) * height),
-      width: Math.round((region.width_percent / 100) * width),
-      height: Math.round((region.height_percent / 100) * height),
-      label: region.label || `Image ${index + 1}`,
-    }));
+    // Convert percentages to pixel coordinates and filter small regions
+    const minWidthPercent = 5;
+    const minHeightPercent = 5;
+    
+    const regions = (parsed.regions || [])
+      .filter((region: any) => {
+        // Filter out regions smaller than 5% in either dimension
+        return region.width_percent >= minWidthPercent && region.height_percent >= minHeightPercent;
+      })
+      .map((region: any, index: number) => ({
+        id: `detected-${index}-${Date.now()}`,
+        x: Math.round((region.x_percent / 100) * width),
+        y: Math.round((region.y_percent / 100) * height),
+        width: Math.round((region.width_percent / 100) * width),
+        height: Math.round((region.height_percent / 100) * height),
+        label: region.label || `Image ${index + 1}`,
+      }));
 
     console.log("Detected regions:", regions.length);
 
