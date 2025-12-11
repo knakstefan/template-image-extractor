@@ -135,16 +135,18 @@ Return ONLY valid JSON:
     }
 
     // Convert percentages to pixel coordinates and filter small regions
-    const minWidthPercent = 2;
-    const minHeightPercent = 2;
+    const minWidthPercent = 1.5;
+    const minHeightPercent = 1.5;
+    const minAreaPercent = 4;
     
     console.log("Raw AI percentages:", JSON.stringify(parsed.regions, null, 2));
     
     const regions = (parsed.regions || [])
       .filter((region: any) => {
-        // Filter out regions smaller than 2% in either dimension
-        if (region.width_percent < minWidthPercent || region.height_percent < minHeightPercent) {
-          console.log(`Filtered out small region "${region.label}": ${region.width_percent}%x${region.height_percent}%`);
+        const area = region.width_percent * region.height_percent;
+        // Filter out regions that are too small in any dimension OR have too small area
+        if (region.width_percent < minWidthPercent || region.height_percent < minHeightPercent || area < minAreaPercent) {
+          console.log(`Filtered out small region "${region.label}": ${region.width_percent}%x${region.height_percent}% (area: ${area.toFixed(1)}%)`);
           return false;
         }
         // Filter out invalid coordinates (must be 0-100)
