@@ -31,21 +31,34 @@ serve(async (req) => {
 
     console.log("Analyzing image for embedded images...", { width, height });
 
-    const prompt = `Find ALL visual elements in this image (photos, icons, logos, illustrations, graphics).
+    const prompt = `Analyze this image and identify ALL embedded visual assets.
 
-For each element, return its EXACT bounding box as percentages (0-100):
-- x_percent: left edge
-- y_percent: top edge  
-- width_percent: width
-- height_percent: height
+INCLUDE these visual element types:
+- Photos and images (product photos, hero images, thumbnails)
+- Icons (UI icons, social media icons, navigation icons)
+- Logos (company logos, brand marks)
+- Illustrations and graphics
+
+EXCLUDE these elements:
+- Text labels and buttons (even if they have backgrounds)
+- Pure text without graphics
+- Background colors or patterns
+- Elements smaller than 2% in both dimensions
+
+For each visual asset, return PRECISE bounding box as percentages (0-100):
+- x_percent: left edge where image pixels BEGIN
+- y_percent: top edge where image pixels BEGIN
+- width_percent: exact width of visual content
+- height_percent: exact height of visual content
 - label: descriptive name
 
-CRITICAL: Boxes must TIGHTLY fit the visual content - NO whitespace, NO padding, NO shadows. Crop to the actual pixels of each image/icon.
+CRITICAL: 
+- All percentages MUST be between 0 and 100
+- Boxes must TIGHTLY fit the actual image content - no whitespace or padding
+- For icons, crop to the icon graphic only, not its container
 
-Minimum size: 2% in both dimensions.
-
-Return ONLY this JSON format:
-{"regions": [{"x_percent": 0.00, "y_percent": 0.00, "width_percent": 0.00, "height_percent": 0.00, "label": ""}], "confidence": 0.0}`;
+Return ONLY valid JSON:
+{"regions": [...], "confidence": 0.0-1.0}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -54,7 +67,7 @@ Return ONLY this JSON format:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-pro",
         messages: [
           {
             role: "user",
@@ -130,7 +143,25 @@ Return ONLY this JSON format:
     const regions = (parsed.regions || [])
       .filter((region: any) => {
         // Filter out regions smaller than 2% in either dimension
-        return region.width_percent >= minWidthPercent && region.height_percent >= minHeightPercent;
+        if (region.width_percent < minWidthPercent || region.height_percent < minHeightPercent) {
+          console.log(`Filtered out small region "${region.label}": ${region.width_percent}%x${region.height_percent}%`);
+          return false;
+        }
+        // Filter out invalid coordinates (must be 0-100)
+        if (region.x_percent < 0 || region.x_percent > 100 ||
+            region.y_percent < 0 || region.y_percent > 100 ||
+            region.width_percent < 0 || region.width_percent > 100 ||
+            region.height_percent < 0 || region.height_percent > 100) {
+          console.log(`Filtered out invalid coordinates for "${region.label}": x=${region.x_percent}, y=${region.y_percent}, w=${region.width_percent}, h=${region.height_percent}`);
+          return false;
+        }
+        // Filter out regions that extend beyond image bounds
+        if (region.x_percent + region.width_percent > 100 || 
+            region.y_percent + region.height_percent > 100) {
+          console.log(`Filtered out out-of-bounds region "${region.label}": extends beyond 100%`);
+          return false;
+        }
+        return true;
       })
       .map((region: any, index: number) => {
         // Direct conversion without inset correction to see raw AI output
