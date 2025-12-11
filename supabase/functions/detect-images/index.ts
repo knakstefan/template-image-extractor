@@ -31,54 +31,21 @@ serve(async (req) => {
 
     console.log("Analyzing image for embedded images...", { width, height });
 
-    const prompt = `Analyze this screenshot/mockup and identify ALL visual assets including images, icons, and logos.
+    const prompt = `Find ALL visual elements in this image (photos, icons, logos, illustrations, graphics).
 
-INCLUDE:
-- Product photos and images
-- Hero/banner images
-- Profile pictures and avatars
-- Content thumbnails
-- Illustrations and graphics
-- Icons (UI icons, social media icons, app icons, navigation icons)
-- Logos (company logos, brand marks, wordmarks, favicon-style logos)
-- Any visual element that is not pure text
+For each element, return its EXACT bounding box as percentages (0-100):
+- x_percent: left edge
+- y_percent: top edge  
+- width_percent: width
+- height_percent: height
+- label: descriptive name
 
-EXCLUDE:
-- Pure text elements without graphics
-- Background patterns or solid color fills
-- Elements smaller than 2% of the total image dimensions
+CRITICAL: Boxes must TIGHTLY fit the visual content - NO whitespace, NO padding, NO shadows. Crop to the actual pixels of each image/icon.
 
-For each visual asset found, provide PRECISE bounding box coordinates as percentages:
+Minimum size: 2% in both dimensions.
 
-CRITICAL PRECISION RULES:
-- Measure from the EXACT pixel where visual content BEGINS (not whitespace, margins, or padding)
-- For images with drop shadows, crop to the SOLID CONTENT only, NOT the shadow
-- For rounded corner images, use the rectangular bounds that contain all visible pixels of the actual image
-- Do NOT include any surrounding whitespace, borders, or UI chrome
-- Double-check: left_edge + width should equal right_edge exactly
-- PREFER SLIGHTLY TIGHTER crops over loose ones - it's better to crop a tiny bit into content than to include extra whitespace
-- For photos/images: find where the actual image pixels start and end
-- For icons: crop to the icon graphic itself, not the touch target or container
-
-Return JSON:
-{
-  "regions": [
-    {
-      "x_percent": <left edge 0-100, precise to 2 decimals>,
-      "y_percent": <top edge 0-100, precise to 2 decimals>,
-      "width_percent": <width 0-100, precise to 2 decimals>,
-      "height_percent": <height 0-100, precise to 2 decimals>,
-      "label": "<descriptive label like 'Logo', 'Icon - Twitter', 'Product Image'>"
-    }
-  ],
-  "confidence": <0-1>
-}
-
-Rules:
-- Include elements that are at least 2% of total dimensions in BOTH width AND height
-- Bounding boxes must TIGHTLY fit the actual visual content with NO extra padding
-- If no visual assets found, return empty regions array
-- Return ONLY valid JSON, no other text`;
+Return ONLY this JSON format:
+{"regions": [{"x_percent": 0.00, "y_percent": 0.00, "width_percent": 0.00, "height_percent": 0.00, "label": ""}], "confidence": 0.0}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -87,7 +54,7 @@ Rules:
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: "google/gemini-2.5-flash",
         messages: [
           {
             role: "user",
