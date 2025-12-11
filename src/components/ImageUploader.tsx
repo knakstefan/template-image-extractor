@@ -70,7 +70,7 @@ export function ImageUploader({ onImageSelect, disabled }: ImageUploaderProps) {
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
         disabled={disabled}
       />
-      <div className="flex flex-col items-center gap-4 p-8 text-center">
+      <div className="flex flex-col items-center gap-4 p-8 text-center pointer-events-none">
         <div
           className={cn(
             "p-6 rounded-2xl transition-all duration-300",
