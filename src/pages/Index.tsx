@@ -84,6 +84,15 @@ export default function Index() {
         return;
       }
 
+      // Update pasted image with AI-generated friendly name
+      if (data.imageName && imageFile?.name.startsWith('pasted-image-')) {
+        const extension = imageFile.name.split('.').pop() || 'png';
+        const newFile = new File([imageFile], `${data.imageName}.${extension}`, {
+          type: imageFile.type,
+        });
+        setImageFile(newFile);
+      }
+
       if (data.regions && data.regions.length > 0) {
         resetRegions(data.regions);
         toast.success(`Selected ${data.regions.length} image(s)!`);
