@@ -21,7 +21,7 @@ interface CropCanvasProps {
   onDimensionsReady: (original: { width: number; height: number }, display: { width: number; height: number }) => void;
 }
 
-const MIN_ZOOM = 0.5;
+const MIN_ZOOM = 0.2;
 const MAX_ZOOM = 4;
 const ZOOM_STEP = 0.15;
 
