@@ -8,7 +8,7 @@ import { useCropEditor } from "@/hooks/useCropEditor";
 import { cropImage, downloadBlob, downloadAllAsZip } from "@/lib/imageUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Sparkles, Slice, Download, Wand2 } from "lucide-react";
+import { Sparkles, ImageUpscale, Download, Wand2 } from "lucide-react";
 
 export default function Index() {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -188,7 +188,7 @@ export default function Index() {
           <div className="relative container py-8">
             <div className="flex flex-col items-center justify-center text-center md:text-left">
               <h1 className="flex items-center gap-2 text-3xl md:text-3xl font-bold">
-                <Slice />
+                <ImageUpscale />
                 <span className="textGradientBlueToGreen">Image Slicer</span>
               </h1>
               <p className="text-sm text-muted-foreground mt-1">Extract images from screenshots & mockups</p>
