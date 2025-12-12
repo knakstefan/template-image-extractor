@@ -16,6 +16,7 @@ export default function Index() {
   const [originalDimensions, setOriginalDimensions] = useState({ width: 0, height: 0 });
   const [displayDimensions, setDisplayDimensions] = useState({ width: 0, height: 0 });
   const [isDetecting, setIsDetecting] = useState(false);
+  const [scrollToRegionId, setScrollToRegionId] = useState<string | null>(null);
 
   const { regions, selectedId, setSelectedId, updateRegion, deleteRegion, addRegion, resetRegions } = useCropEditor();
 
@@ -211,6 +212,7 @@ export default function Index() {
                       imageSrc={imageSrc}
                       regions={regions}
                       selectedId={selectedId}
+                      scrollToRegionId={scrollToRegionId}
                       onSelectRegion={setSelectedId}
                       onUpdateRegion={updateRegion}
                       onDeleteRegion={deleteRegion}
@@ -239,7 +241,11 @@ export default function Index() {
                             displayWidth={displayDimensions.width}
                             displayHeight={displayDimensions.height}
                             isSelected={selectedId === region.id}
-                            onSelect={() => setSelectedId(region.id)}
+                            onSelect={() => {
+                              setSelectedId(region.id);
+                              setScrollToRegionId(region.id);
+                              setTimeout(() => setScrollToRegionId(null), 500);
+                            }}
                             onDelete={() => deleteRegion(region.id)}
                             onDownload={() => handleDownloadSingle(region.id)}
                             index={index}
