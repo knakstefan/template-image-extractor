@@ -85,8 +85,8 @@ export default function Index() {
       }
 
       // Update pasted image with AI-generated friendly name
-      if (data.imageName && imageFile?.name.startsWith('pasted-image-')) {
-        const extension = imageFile.name.split('.').pop() || 'png';
+      if (data.imageName && imageFile?.name.startsWith("pasted-image-")) {
+        const extension = imageFile.name.split(".").pop() || "png";
         const newFile = new File([imageFile], `${data.imageName}.${extension}`, {
           type: imageFile.type,
         });
@@ -126,7 +126,7 @@ export default function Index() {
           displayDimensions.height,
         );
         const baseName = region.filename || region.label || `crop-${regions.indexOf(region) + 1}`;
-        const cleanName = baseName.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+        const cleanName = baseName.replace(/\.(png|jpg|jpeg|webp)$/i, "");
         downloadBlob(result.blob, `${cleanName}.${result.extension}`);
         toast.success("Image downloaded!");
       } catch (error) {
@@ -244,7 +244,7 @@ export default function Index() {
               />
 
               <div className="grid lg:grid-cols-[1fr,320px] gap-6">
-                <div className="space-y-4">
+                <div className="space-y-4 max-w-lg">
                   <div className="glass rounded-xl p-4">
                     <CropCanvas
                       imageSrc={imageSrc}
