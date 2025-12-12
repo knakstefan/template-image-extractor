@@ -33,6 +33,9 @@ serve(async (req) => {
 
     const prompt = `Analyze this image and identify ALL embedded visual assets.
 
+FIRST: Provide a descriptive filename for the overall image/screenshot based on its content.
+Use kebab-case, lowercase, no special characters (e.g., "webflow-testimonials-page", "product-hero-section", "landing-page-screenshot").
+
 INCLUDE these visual element types:
 - Photos and images (product photos, hero images, thumbnails)
 - Icons (UI icons, social media icons, navigation icons)
@@ -60,7 +63,7 @@ CRITICAL:
 - filename must be valid for file systems: only lowercase letters, numbers, and hyphens
 
 Return ONLY valid JSON:
-{"regions": [...], "confidence": 0.0-1.0}`;
+{"imageName": "descriptive-name-for-image", "regions": [...], "confidence": 0.0-1.0}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -191,6 +194,7 @@ Return ONLY valid JSON:
 
     return new Response(
       JSON.stringify({
+        imageName: parsed.imageName || null,
         regions,
         confidence: parsed.confidence || 0.8,
       }),
