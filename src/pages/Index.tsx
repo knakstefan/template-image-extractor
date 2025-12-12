@@ -16,6 +16,8 @@ export default function Index() {
   const [originalDimensions, setOriginalDimensions] = useState({ width: 0, height: 0 });
   const [displayDimensions, setDisplayDimensions] = useState({ width: 0, height: 0 });
   const [isDetecting, setIsDetecting] = useState(false);
+  const [detectionProgress, setDetectionProgress] = useState(0);
+  const [detectionStep, setDetectionStep] = useState("");
   const [scrollToRegionId, setScrollToRegionId] = useState<string | null>(null);
 
   const { regions, selectedId, setSelectedId, updateRegion, deleteRegion, addRegion, resetRegions } = useCropEditor();
@@ -42,8 +44,27 @@ export default function Index() {
     if (!imageSrc) return;
 
     setIsDetecting(true);
+    setDetectionProgress(0);
+    setDetectionStep("Preparing image...");
+
+    // Start progress simulation
+    const progressInterval = setInterval(() => {
+      setDetectionProgress((prev) => {
+        if (prev < 20) {
+          setDetectionStep("Preparing image...");
+          return prev + 4;
+        } else if (prev < 70) {
+          setDetectionStep("Analyzing content...");
+          return prev + 2;
+        } else if (prev < 90) {
+          setDetectionStep("Detecting regions...");
+          return prev + 0.5;
+        }
+        return prev;
+      });
+    }, 200);
+
     try {
-      // Use display dimensions - regions come back ready to use directly
       const { data, error } = await supabase.functions.invoke("detect-images", {
         body: {
           imageBase64: imageSrc,
@@ -51,6 +72,10 @@ export default function Index() {
           height: displayDimensions.height,
         },
       });
+
+      clearInterval(progressInterval);
+      setDetectionProgress(100);
+      setDetectionStep("Complete!");
 
       if (error) throw error;
 
@@ -66,10 +91,12 @@ export default function Index() {
         toast.info("No embedded images detected. Try adding regions manually.");
       }
     } catch (error) {
+      clearInterval(progressInterval);
       console.error("Detection error:", error);
       toast.error("Failed to detect images. Please try again.");
     } finally {
       setIsDetecting(false);
+      setDetectionProgress(0);
     }
   }, [imageSrc, displayDimensions, resetRegions]);
 
@@ -213,6 +240,9 @@ export default function Index() {
                       regions={regions}
                       selectedId={selectedId}
                       scrollToRegionId={scrollToRegionId}
+                      isDetecting={isDetecting}
+                      detectionProgress={detectionProgress}
+                      detectionStep={detectionStep}
                       onSelectRegion={setSelectedId}
                       onUpdateRegion={updateRegion}
                       onDeleteRegion={deleteRegion}

@@ -1,15 +1,19 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { CropRegion } from "@/types/crop";
 import { CropOverlay } from "./CropOverlay";
-import { Plus, ZoomIn, ZoomOut, RotateCcw } from "lucide-react";
+import { Plus, ZoomIn, ZoomOut, RotateCcw, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
+import { Progress } from "./ui/progress";
 
 interface CropCanvasProps {
   imageSrc: string;
   regions: CropRegion[];
   selectedId: string | null;
   scrollToRegionId?: string | null;
+  isDetecting?: boolean;
+  detectionProgress?: number;
+  detectionStep?: string;
   onSelectRegion: (id: string | null) => void;
   onUpdateRegion: (id: string, updates: Partial<CropRegion>) => void;
   onDeleteRegion: (id: string) => void;
@@ -26,6 +30,9 @@ export function CropCanvas({
   regions,
   selectedId,
   scrollToRegionId,
+  isDetecting,
+  detectionProgress,
+  detectionStep,
   onSelectRegion,
   onUpdateRegion,
   onDeleteRegion,
@@ -116,6 +123,7 @@ export function CropCanvas({
   }, []);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (isDetecting) return;
     if (e.target !== containerRef.current && e.target !== imgRef.current) return;
     
     onSelectRegion(null);
@@ -130,7 +138,7 @@ export function CropCanvas({
     setIsDrawing(true);
     setDrawStart({ x, y });
     setDrawRect({ x, y, width: 0, height: 0 });
-  }, [onSelectRegion, zoomLevel]);
+  }, [onSelectRegion, zoomLevel, isDetecting]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDrawing || !containerRef.current) return;
@@ -181,7 +189,7 @@ export function CropCanvas({
             size="icon"
             className="h-8 w-8"
             onClick={handleZoomOut}
-            disabled={zoomLevel <= MIN_ZOOM}
+            disabled={zoomLevel <= MIN_ZOOM || isDetecting}
           >
             <ZoomOut className="h-4 w-4" />
           </Button>
@@ -195,7 +203,7 @@ export function CropCanvas({
             size="icon"
             className="h-8 w-8"
             onClick={handleZoomIn}
-            disabled={zoomLevel >= MAX_ZOOM}
+            disabled={zoomLevel >= MAX_ZOOM || isDetecting}
           >
             <ZoomIn className="h-4 w-4" />
           </Button>
@@ -205,7 +213,7 @@ export function CropCanvas({
             size="icon"
             className="h-8 w-8"
             onClick={handleResetZoom}
-            disabled={zoomLevel === 1}
+            disabled={zoomLevel === 1 || isDetecting}
           >
             <RotateCcw className="h-4 w-4" />
           </Button>
@@ -218,12 +226,13 @@ export function CropCanvas({
         className="overflow-auto max-h-[70vh] rounded-lg border border-border bg-muted/30"
         onWheel={handleWheel}
       >
-        <div
-          ref={containerRef}
-          className={cn(
-            "relative inline-block cursor-crosshair origin-top-left",
-            isDrawing && "select-none"
-          )}
+          <div
+            ref={containerRef}
+            className={cn(
+              "relative inline-block origin-top-left",
+              isDetecting ? "cursor-default" : "cursor-crosshair",
+              isDrawing && "select-none"
+            )}
           style={{
             transform: `scale(${zoomLevel})`,
             transformOrigin: "top left",
@@ -268,6 +277,29 @@ export function CropCanvas({
                 height: drawRect.height,
               }}
             />
+          )}
+
+          {/* Detection overlay */}
+          {isDetecting && (
+            <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+              {/* Scanning animation line */}
+              <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-scan-line" />
+
+              <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-background/80 border border-border/50 shadow-lg">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+
+                {/* Progress bar */}
+                <div className="w-48">
+                  <Progress value={detectionProgress} className="h-2" />
+                </div>
+
+                {/* Step label */}
+                <span className="text-sm font-medium text-foreground">{detectionStep}</span>
+
+                {/* Percentage */}
+                <span className="text-xs text-muted-foreground">{Math.round(detectionProgress || 0)}%</span>
+              </div>
+            </div>
           )}
         </div>
       </div>

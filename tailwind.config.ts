@@ -100,6 +100,12 @@ export default {
           "50%": { boxShadow: "0 0 25px 5px hsl(180 100% 45% / 0.6)" },
           "100%": { boxShadow: "0 0 0 0 hsl(180 100% 45% / 0)" },
         },
+        "scan-line": {
+          "0%": { top: "0%", opacity: "0" },
+          "10%": { opacity: "1" },
+          "90%": { opacity: "1" },
+          "100%": { top: "100%", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -108,6 +114,7 @@ export default {
         shimmer: "shimmer 2s linear infinite",
         "gradient-shift": "gradient-shift 8s ease infinite",
         "paste-glow": "paste-glow 0.5s ease-out",
+        "scan-line": "scan-line 2s ease-in-out infinite",
       },
     },
   },
