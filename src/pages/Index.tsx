@@ -177,8 +177,8 @@ export default function Index() {
 
           <div className="relative container py-8">
             <div className="flex flex-col items-center justify-center text-center md:text-left">
-              <h1 className="flex items-center gap-2 text-3xl md:text-3xl font-bold">
-                <Sparkles className="textGradientBlueToGreen" />
+              <h1 className="flex items-center gap-2 text-3xl md:text-3xl font-bold textGradientBlueToGreen">
+                <Sparkles />
                 <span className="textGradientBlueToGreen">Image Extractor</span>
               </h1>
               <p className="text-sm text-muted-foreground mt-1">Extract images from screenshots & mockups</p>
