@@ -183,6 +183,21 @@ export function CropCanvas({
     return () => container.removeEventListener("wheel", handleNativeWheel);
   }, []);
 
+  // Delete key support for selected region
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isDetecting) return;
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedId) {
+        // Prevent backspace from navigating back in some browsers
+        e.preventDefault();
+        onDeleteRegion(selectedId);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedId, onDeleteRegion, isDetecting]);
+
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
       if (isDetecting) return;

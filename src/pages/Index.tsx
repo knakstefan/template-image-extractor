@@ -47,20 +47,20 @@ export default function Index() {
     setDetectionProgress(0);
     setDetectionStep("Preparing image...");
 
-    // Start progress simulation
+    // Start progress simulation - slow progression that only pauses at 99%
     const progressInterval = setInterval(() => {
       setDetectionProgress((prev) => {
-        if (prev < 20) {
+        if (prev < 30) {
           setDetectionStep("Preparing image...");
-          return prev + 4;
+          return prev + 0.8;  // 0→30% in ~7.5 seconds
         } else if (prev < 70) {
           setDetectionStep("Analyzing content...");
-          return prev + 2;
-        } else if (prev < 90) {
+          return prev + 0.5;  // 30→70% in ~16 seconds
+        } else if (prev < 99) {
           setDetectionStep("Detecting regions...");
-          return prev + 0.5;
+          return prev + 0.2;  // 70→99% in ~29 seconds
         }
-        return prev;
+        return 99;  // Pause at 99%, not before
       });
     }, 200);
 
