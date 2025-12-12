@@ -1,7 +1,7 @@
 import { CropRegion } from "@/types/crop";
 import JSZip from "jszip";
 
-export type ImageFormat = 'png' | 'jpeg' | 'webp';
+export type ImageFormat = "png" | "jpeg" | "webp";
 
 export interface OptimizationResult {
   blob: Blob;
@@ -46,14 +46,14 @@ function hasTransparency(imageData: ImageData): boolean {
  */
 function detectOptimalFormat(ctx: CanvasRenderingContext2D, width: number, height: number): ImageFormat {
   const imageData = ctx.getImageData(0, 0, width, height);
-  
+
   // If has transparency, must use PNG or WebP with alpha
   if (hasTransparency(imageData)) {
-    return 'png';
+    return "png";
   }
-  
+
   // For non-transparent images, WebP provides best compression
-  return 'webp';
+  return "webp";
 }
 
 /**
@@ -63,14 +63,14 @@ async function canvasToOptimizedBlob(
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
   forceFormat?: ImageFormat,
-  customQuality?: number
+  customQuality?: number,
 ): Promise<OptimizationResult> {
   const format = forceFormat || detectOptimalFormat(ctx, canvas.width, canvas.height);
-  
+
   // Quality settings: customQuality or default (0.85 for crops)
-  const quality = format === 'png' ? undefined : (customQuality ?? 0.85);
+  const quality = format === "png" ? undefined : (customQuality ?? 0.85);
   const mimeType = `image/${format}`;
-  
+
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
@@ -78,14 +78,14 @@ async function canvasToOptimizedBlob(
           resolve({
             blob,
             format,
-            extension: format === 'jpeg' ? 'jpg' : format,
+            extension: format === "jpeg" ? "jpg" : format,
           });
         } else {
           reject(new Error("Failed to create blob"));
         }
       },
       mimeType,
-      quality
+      quality,
     );
   });
 }
@@ -93,37 +93,34 @@ async function canvasToOptimizedBlob(
 /**
  * Optimizes the template/original image with high-quality compression
  */
-async function optimizeTemplate(
-  originalFile: File,
-  forceFormat?: ImageFormat
-): Promise<OptimizationResult> {
+async function optimizeTemplate(originalFile: File, forceFormat?: ImageFormat): Promise<OptimizationResult> {
   const imageSrc = await fileToBase64(originalFile);
   const img = await loadImage(imageSrc);
-  
+
   // Maximum height constraint to avoid platform/browser limitations
-  const MAX_HEIGHT = 4096;
-  
+  const MAX_HEIGHT = 4000;
+
   let targetWidth = img.naturalWidth;
   let targetHeight = img.naturalHeight;
-  
+
   // Scale down if height exceeds maximum, maintaining aspect ratio
   if (targetHeight > MAX_HEIGHT) {
     const scale = MAX_HEIGHT / targetHeight;
     targetWidth = Math.round(targetWidth * scale);
     targetHeight = MAX_HEIGHT;
   }
-  
+
   const canvas = document.createElement("canvas");
   canvas.width = targetWidth;
   canvas.height = targetHeight;
-  
+
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Could not get canvas context");
-  
+
   ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
+  ctx.imageSmoothingQuality = "high";
   ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
-  
+
   // Use higher quality (0.92) for template to preserve source quality
   return canvasToOptimizedBlob(canvas, ctx, forceFormat, 0.92);
 }
@@ -135,14 +132,14 @@ export async function cropImage(
   originalHeight: number,
   displayWidth: number,
   displayHeight: number,
-  forceFormat?: ImageFormat
+  forceFormat?: ImageFormat,
 ): Promise<OptimizationResult> {
   const img = await loadImage(imageSrc);
-  
+
   // Scale coordinates from display to original
   const scaleX = originalWidth / displayWidth;
   const scaleY = originalHeight / displayHeight;
-  
+
   const x = Math.round(region.x * scaleX);
   const y = Math.round(region.y * scaleY);
   const width = Math.round(region.width * scaleX);
@@ -151,13 +148,13 @@ export async function cropImage(
   const canvas = document.createElement("canvas");
   canvas.width = width;
   canvas.height = height;
-  
+
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Could not get canvas context");
 
   // Enable high-quality image rendering
   ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
+  ctx.imageSmoothingQuality = "high";
 
   ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
 
@@ -182,7 +179,7 @@ export async function downloadAllAsZip(
   originalWidth: number,
   originalHeight: number,
   displayWidth: number,
-  displayHeight: number
+  displayHeight: number,
 ): Promise<void> {
   const zip = new JSZip();
 
@@ -193,17 +190,10 @@ export async function downloadAllAsZip(
   // Add all cropped regions with optimized format selection
   for (let i = 0; i < regions.length; i++) {
     const region = regions[i];
-    const result = await cropImage(
-      imageSrc,
-      region,
-      originalWidth,
-      originalHeight,
-      displayWidth,
-      displayHeight
-    );
+    const result = await cropImage(imageSrc, region, originalWidth, originalHeight, displayWidth, displayHeight);
     const baseName = region.filename || region.label || `crop-${i + 1}`;
     // Remove any existing extension and add the optimized one
-    const cleanName = baseName.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+    const cleanName = baseName.replace(/\.(png|jpg|jpeg|webp)$/i, "");
     zip.file(`${cleanName}.${result.extension}`, result.blob);
   }
 
