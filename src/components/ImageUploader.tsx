@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { Upload, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +50,35 @@ export function ImageUploader({ onImageSelect, disabled }: ImageUploaderProps) {
     [handleFile]
   );
 
+  const handlePaste = useCallback(
+    (e: ClipboardEvent) => {
+      if (disabled) return;
+
+      const items = e.clipboardData?.items;
+      if (!items) return;
+
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          e.preventDefault();
+          const file = item.getAsFile();
+          if (file) {
+            const namedFile = new File([file], `pasted-image-${Date.now()}.png`, {
+              type: file.type,
+            });
+            handleFile(namedFile);
+          }
+          break;
+        }
+      }
+    },
+    [disabled, handleFile]
+  );
+
+  useEffect(() => {
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, [handlePaste]);
+
   return (
     <div
       onDrop={handleDrop}
@@ -90,7 +119,7 @@ export function ImageUploader({ onImageSelect, disabled }: ImageUploaderProps) {
             {isDragging ? "Drop your image here" : "Upload your template image"}
           </p>
           <p className="text-sm text-muted-foreground">
-            Drag & drop or click to browse
+            Drag & drop, click to browse, or paste (⌘V)
           </p>
           <p className="text-xs text-muted-foreground/70">
             Supports PNG, JPG, WebP
