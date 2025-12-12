@@ -161,7 +161,7 @@ export default function Index() {
         <main className="container py-8 space-y-8">
           {!imageSrc ? (
             <div className="max-w-2xl mx-auto space-y-8">
-              <div className="text-center space-y-4">
+              <div className="flex justify-center text-center space-y-4">
                 <h2 className="text-3xl font-bold text-foreground">Extract Images from Image templates using AI</h2>
                 <p className="text-lg text-muted-foreground max-w-md mx-auto">
                   Upload a screenshot or mockup, and our AI will automatically detect and extract all embedded images.
