@@ -117,7 +117,7 @@ export default function Index() {
       if (!region) return;
 
       try {
-        const blob = await cropImage(
+        const result = await cropImage(
           imageSrc,
           region,
           originalDimensions.width,
@@ -125,8 +125,9 @@ export default function Index() {
           displayDimensions.width,
           displayDimensions.height,
         );
-        const filename = region.filename || region.label || `crop-${regions.indexOf(region) + 1}`;
-        downloadBlob(blob, filename.endsWith(".png") ? filename : `${filename}.png`);
+        const baseName = region.filename || region.label || `crop-${regions.indexOf(region) + 1}`;
+        const cleanName = baseName.replace(/\.(png|jpg|jpeg|webp)$/i, '');
+        downloadBlob(result.blob, `${cleanName}.${result.extension}`);
         toast.success("Image downloaded!");
       } catch (error) {
         console.error("Download error:", error);

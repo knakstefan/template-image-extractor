@@ -47,15 +47,27 @@ export function CropPreview({
         const width = Math.round(region.width * scaleX);
         const height = Math.round(region.height * scaleY);
 
+        // Optimize preview size - max 300px for thumbnails (2x for retina)
+        const maxPreviewSize = 300;
+        const scale = Math.min(maxPreviewSize / width, maxPreviewSize / height, 1);
+        const previewWidth = Math.round(width * scale);
+        const previewHeight = Math.round(height * scale);
+
         const canvas = document.createElement("canvas");
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = previewWidth;
+        canvas.height = previewHeight;
         
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
 
-        ctx.drawImage(img, x, y, width, height, 0, 0, width, height);
-        setPreview(canvas.toDataURL("image/png"));
+        // Enable high-quality downscaling
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        ctx.drawImage(img, x, y, width, height, 0, 0, previewWidth, previewHeight);
+        
+        // Use WebP for thumbnails - much smaller than PNG
+        setPreview(canvas.toDataURL("image/webp", 0.8));
       } catch (error) {
         console.error("Failed to generate preview:", error);
       }
