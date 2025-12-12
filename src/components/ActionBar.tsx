@@ -20,7 +20,7 @@ export function ActionBar({ onDetect, onDownloadAll, onReset, isDetecting, hasRe
         </Button>
         <Button variant="outline" onClick={onReset} disabled={!hasImage} className="gap-2">
           <RotateCcw className="w-4 h-4" />
-          Upload a different template
+          Start over using a different image
         </Button>
       </div>
 
