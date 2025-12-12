@@ -147,7 +147,7 @@ export default function Index() {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-cyan-500/15 to-emerald-500/20 bg-[length:200%_100%] animate-gradient-shift" />
           <div className="absolute inset-0 bg-background/85 backdrop-blur-xl" />
 
-          <div className="relative container py-6">
+          <div className="relative container py-8">
             <div className="flex flex-col items-center justify-center text-center md:text-left">
               <h1 className="text-3xl md:text-3xl font-bold">
                 <span className="text-foreground">AI </span>
