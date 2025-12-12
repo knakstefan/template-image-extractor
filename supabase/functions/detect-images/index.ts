@@ -29,10 +29,38 @@ serve(async (req) => {
       );
     }
 
-    console.log("Analyzing image for embedded images...", { width, height });
+    // Calculate aspect ratio to adjust filters for long images
+    const aspectRatio = height / width;
+    const isVeryTallImage = aspectRatio > 3; // Height > 3x width (like newsletters)
+    const isModeratelyTallImage = aspectRatio > 2;
+
+    const filterMode = isVeryTallImage ? "very-tall" : isModeratelyTallImage ? "tall" : "standard";
+    console.log("Analyzing image for embedded images...", { 
+      width, 
+      height, 
+      aspectRatio: aspectRatio.toFixed(2),
+      filterMode 
+    });
+
+    // Build adaptive prompt based on image characteristics
+    let additionalInstructions = "";
+    if (isVeryTallImage) {
+      additionalInstructions = `
+
+SPECIAL INSTRUCTIONS FOR LONG-FORM CONTENT:
+This appears to be a long scrollable page (newsletter, email, landing page).
+- Pay EXTRA attention to repetitive elements - each instance is a separate asset
+- Sequential numbered steps (Step 1, Step 2, etc.) each need their own bounding box
+- Small icons in footers and headers are important - include them
+- App store badges, social media icons, and contact icons should be captured
+- Phone/device mockups showing screens are separate assets
+- Do NOT skip elements because they look similar to others
+- Scan the ENTIRE image from top to bottom systematically
+- For very tall images, elements may be as small as 0.3% height - still include them`;
+    }
 
     const prompt = `Analyze this image and identify ALL embedded visual assets.
-
+${additionalInstructions}
 FIRST: Provide a descriptive filename for the overall image/screenshot based on its content.
 Use kebab-case, lowercase, no special characters (e.g., "webflow-testimonials-page", "product-hero-section", "landing-page-screenshot").
 
@@ -46,7 +74,7 @@ EXCLUDE these elements:
 - Text labels and buttons (even if they have backgrounds)
 - Pure text without graphics
 - Background colors or patterns
-- Elements smaller than 2% in both dimensions
+${isVeryTallImage ? '- Elements smaller than 0.3% in both dimensions' : '- Elements smaller than 2% in both dimensions'}
 
 For each visual asset, return PRECISE bounding box as percentages (0-100):
 - x_percent: left edge where image pixels BEGIN
@@ -139,10 +167,23 @@ Return ONLY valid JSON:
       );
     }
 
-    // Convert percentages to pixel coordinates and filter small regions
-    const minWidthPercent = 1.5;
-    const minHeightPercent = 1.5;
-    const minAreaPercent = 4;
+    // Adaptive minimum size thresholds based on aspect ratio
+    let minWidthPercent = 1.5;
+    let minHeightPercent = 1.5;
+    let minAreaPercent = 4;
+
+    if (isVeryTallImage) {
+      // For very tall images (5000px+ height), use much lower height threshold
+      minWidthPercent = 1.0;   // ~7px for 680px wide
+      minHeightPercent = 0.3;  // ~17px for 5600px tall (instead of 84px)
+      minAreaPercent = 1.0;    // Lower area threshold too
+      console.log("Using relaxed filters for very tall image");
+    } else if (isModeratelyTallImage) {
+      minWidthPercent = 1.2;
+      minHeightPercent = 0.8;
+      minAreaPercent = 2.0;
+      console.log("Using adjusted filters for tall image");
+    }
     
     console.log("Raw AI percentages:", JSON.stringify(parsed.regions, null, 2));
     
