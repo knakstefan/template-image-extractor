@@ -154,8 +154,9 @@ export default function Index() {
           
           <div className="relative container py-5">
             <div className="text-center md:text-left">
-              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground via-cyan-300 to-primary bg-clip-text text-transparent">
-                AI Image Cropper
+              <h1 className="text-2xl md:text-3xl font-bold">
+                <span className="text-foreground">AI </span>
+                <span className="textGradientBlueToGreen">Image Cropper</span>
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 Extract images from screenshots & mockups
