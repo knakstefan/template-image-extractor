@@ -17,29 +17,24 @@ export default function Index() {
   const [displayDimensions, setDisplayDimensions] = useState({ width: 0, height: 0 });
   const [isDetecting, setIsDetecting] = useState(false);
 
-  const {
-    regions,
-    selectedId,
-    setSelectedId,
-    updateRegion,
-    deleteRegion,
-    addRegion,
-    resetRegions,
-  } = useCropEditor();
+  const { regions, selectedId, setSelectedId, updateRegion, deleteRegion, addRegion, resetRegions } = useCropEditor();
 
-  const handleImageSelect = useCallback((file: File, preview: string) => {
-    setImageFile(file);
-    setImageSrc(preview);
-    resetRegions([]);
-    toast.success("Image uploaded successfully!");
-  }, [resetRegions]);
+  const handleImageSelect = useCallback(
+    (file: File, preview: string) => {
+      setImageFile(file);
+      setImageSrc(preview);
+      resetRegions([]);
+      toast.success("Image uploaded successfully!");
+    },
+    [resetRegions],
+  );
 
   const handleDimensionsReady = useCallback(
     (original: { width: number; height: number }, display: { width: number; height: number }) => {
       setOriginalDimensions(original);
       setDisplayDimensions(display);
     },
-    []
+    [],
   );
 
   const handleDetect = useCallback(async () => {
@@ -91,17 +86,17 @@ export default function Index() {
           originalDimensions.width,
           originalDimensions.height,
           displayDimensions.width,
-          displayDimensions.height
+          displayDimensions.height,
         );
         const filename = region.filename || region.label || `crop-${regions.indexOf(region) + 1}`;
-        downloadBlob(blob, filename.endsWith('.png') ? filename : `${filename}.png`);
+        downloadBlob(blob, filename.endsWith(".png") ? filename : `${filename}.png`);
         toast.success("Image downloaded!");
       } catch (error) {
         console.error("Download error:", error);
         toast.error("Failed to download image");
       }
     },
-    [imageSrc, regions, originalDimensions, displayDimensions]
+    [imageSrc, regions, originalDimensions, displayDimensions],
   );
 
   const handleDownloadAll = useCallback(async () => {
@@ -116,7 +111,7 @@ export default function Index() {
         originalDimensions.width,
         originalDimensions.height,
         displayDimensions.width,
-        displayDimensions.height
+        displayDimensions.height,
       );
       toast.dismiss();
       toast.success("ZIP file downloaded!");
@@ -139,7 +134,7 @@ export default function Index() {
   return (
     <>
       <Helmet>
-        <title>AI Image Cropper - Extract Images from Screenshots & Mockups</title>
+        <title>AI Image Extractor - Extract Images from Screenshots & Mockups</title>
         <meta
           name="description"
           content="Upload screenshots or mockups and let AI automatically detect and crop embedded images. Download individually or as a batch ZIP file."
@@ -151,16 +146,14 @@ export default function Index() {
           {/* Animated gradient background */}
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-cyan-500/15 to-emerald-500/20 bg-[length:200%_100%] animate-gradient-shift" />
           <div className="absolute inset-0 bg-background/85 backdrop-blur-xl" />
-          
+
           <div className="relative container py-5">
             <div className="text-center md:text-left">
               <h1 className="text-2xl md:text-3xl font-bold">
-                <span className="text-foreground">AI </span>
-                <span className="textGradientBlueToGreen">Image Cropper</span>
+                <span className="text-foreground textGradientBlueToGreen">AI </span>
+                <span className="textGradientBlueToGreen">Image Extractor</span>
               </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Extract images from screenshots & mockups
-              </p>
+              <p className="text-sm text-muted-foreground mt-1">Extract images from screenshots & mockups</p>
             </div>
           </div>
         </header>
@@ -169,12 +162,9 @@ export default function Index() {
           {!imageSrc ? (
             <div className="max-w-2xl mx-auto space-y-8">
               <div className="text-center space-y-4">
-                <h2 className="text-3xl font-bold text-foreground">
-                  Extract Images with AI
-                </h2>
+                <h2 className="text-3xl font-bold text-foreground">Extract Images with AI</h2>
                 <p className="text-lg text-muted-foreground max-w-md mx-auto">
-                  Upload a screenshot or mockup, and our AI will automatically detect
-                  and extract all embedded images.
+                  Upload a screenshot or mockup, and our AI will automatically detect and extract all embedded images.
                 </p>
               </div>
 
@@ -186,27 +176,21 @@ export default function Index() {
                     <Wand2 className="w-6 h-6 text-primary" />
                   </div>
                   <h3 className="font-semibold text-foreground">AI Detection</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Automatic image boundary detection
-                  </p>
+                  <p className="text-sm text-muted-foreground">Automatic image boundary detection</p>
                 </div>
                 <div className="text-center space-y-2">
                   <div className="p-3 bg-accent/10 rounded-xl w-fit mx-auto">
                     <Sparkles className="w-6 h-6 text-accent" />
                   </div>
                   <h3 className="font-semibold text-foreground">Edit & Adjust</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Fine-tune crop regions manually
-                  </p>
+                  <p className="text-sm text-muted-foreground">Fine-tune crop regions manually</p>
                 </div>
                 <div className="text-center space-y-2">
                   <div className="p-3 bg-success/10 rounded-xl w-fit mx-auto">
                     <Download className="w-6 h-6 text-success" />
                   </div>
                   <h3 className="font-semibold text-foreground">Batch Export</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Download all as ZIP or individually
-                  </p>
+                  <p className="text-sm text-muted-foreground">Download all as ZIP or individually</p>
                 </div>
               </div>
             </div>
@@ -239,9 +223,7 @@ export default function Index() {
 
                 <div className="space-y-4">
                   <div className="glass rounded-xl p-4">
-                    <h3 className="font-semibold text-foreground mb-4">
-                      Detected Images ({regions.length})
-                    </h3>
+                    <h3 className="font-semibold text-foreground mb-4">Detected Images ({regions.length})</h3>
                     {regions.length === 0 ? (
                       <p className="text-sm text-muted-foreground text-center py-8">
                         Click "Detect Images" or draw regions manually
