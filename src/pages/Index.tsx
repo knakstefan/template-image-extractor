@@ -147,9 +147,9 @@ export default function Index() {
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-cyan-500/15 to-emerald-500/20 bg-[length:200%_100%] animate-gradient-shift" />
           <div className="absolute inset-0 bg-background/85 backdrop-blur-xl" />
 
-          <div className="relative container py-5">
+          <div className="relative container py-6">
             <div className="flex flex-col items-center justify-center text-center md:text-left">
-              <h1 className="text-2xl md:text-3xl font-bold">
+              <h1 className="text-3xl md:text-3xl font-bold">
                 <span className="text-foreground">AI </span>
                 <span className="textGradientBlueToGreen">Image Extractor</span>
               </h1>
@@ -162,7 +162,7 @@ export default function Index() {
           {!imageSrc ? (
             <div className="max-w-2xl mx-auto space-y-8">
               <div className="text-center space-y-4">
-                <h2 className="text-3xl font-bold text-foreground">Extract Images from Image templates using AI</h2>
+                <h2 className="text-2xl font-bold text-foreground">Extract Images from Image templates using AI</h2>
                 <p className="text-lg text-muted-foreground max-w-md mx-auto">
                   Upload a screenshot or mockup, and our AI will automatically detect and extract all embedded images.
                 </p>
