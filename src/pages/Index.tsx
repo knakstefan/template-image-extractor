@@ -187,7 +187,7 @@ export default function Index() {
 
           <div className="relative container py-8">
             <div className="flex flex-col items-center justify-center text-center md:text-left">
-              <h1 className="flex items-center gap-2 text-3xl md:text-3xl font-bold">
+              <h1 className="flex items-center gap-4 text-4xl md:text-3xl font-bold">
                 <ImageUpscale />
                 <span className="textGradientBlueToGreen">Image Slicer</span>
               </h1>
