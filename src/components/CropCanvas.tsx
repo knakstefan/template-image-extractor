@@ -175,49 +175,66 @@ export function CropCanvas({
 
   return (
     <div className="relative flex flex-col gap-2">
-      {/* Header with instructions and zoom controls */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Plus className="w-4 h-4" />
-          <span>Click and drag to add crop regions. Hold ⌘/Ctrl + scroll to zoom.</span>
-        </div>
-        
-        {/* Zoom controls */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={handleZoomOut}
-            disabled={zoomLevel <= MIN_ZOOM || isDetecting}
-          >
-            <ZoomOut className="h-4 w-4" />
-          </Button>
-          
-          <div className="min-w-[60px] text-center text-sm font-medium text-muted-foreground">
-            {Math.round(zoomLevel * 100)}%
+      {/* Header with instructions/zoom OR detection progress */}
+      <div className="flex items-center justify-between gap-4 min-h-[32px]">
+        {isDetecting ? (
+          <div className="flex items-center gap-4 flex-1">
+            <Loader2 className="w-5 h-5 animate-spin text-primary flex-shrink-0" />
+            <div className="flex-1 max-w-md">
+              <Progress value={detectionProgress} className="h-2" />
+            </div>
+            <span className="text-sm font-medium text-foreground whitespace-nowrap">
+              {detectionStep}
+            </span>
+            <span className="text-sm text-muted-foreground whitespace-nowrap">
+              {Math.round(detectionProgress || 0)}%
+            </span>
           </div>
-          
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={handleZoomIn}
-            disabled={zoomLevel >= MAX_ZOOM || isDetecting}
-          >
-            <ZoomIn className="h-4 w-4" />
-          </Button>
-          
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={handleResetZoom}
-            disabled={zoomLevel === 1 || isDetecting}
-          >
-            <RotateCcw className="h-4 w-4" />
-          </Button>
-        </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Plus className="w-4 h-4" />
+              <span>Click and drag to add crop regions. Hold ⌘/Ctrl + scroll to zoom.</span>
+            </div>
+            
+            {/* Zoom controls */}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleZoomOut}
+                disabled={zoomLevel <= MIN_ZOOM}
+              >
+                <ZoomOut className="h-4 w-4" />
+              </Button>
+              
+              <div className="min-w-[60px] text-center text-sm font-medium text-muted-foreground">
+                {Math.round(zoomLevel * 100)}%
+              </div>
+              
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleZoomIn}
+                disabled={zoomLevel >= MAX_ZOOM}
+              >
+                <ZoomIn className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleResetZoom}
+                disabled={zoomLevel === 1}
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Scrollable zoom container */}
@@ -279,26 +296,11 @@ export function CropCanvas({
             />
           )}
 
-          {/* Detection overlay */}
+          {/* Detection overlay - dims the image */}
           {isDetecting && (
-            <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+            <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] z-50 pointer-events-none">
               {/* Scanning animation line */}
               <div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent animate-scan-line" />
-
-              <div className="flex flex-col items-center gap-4 p-6 rounded-xl bg-background/80 border border-border/50 shadow-lg">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-
-                {/* Progress bar */}
-                <div className="w-48">
-                  <Progress value={detectionProgress} className="h-2" />
-                </div>
-
-                {/* Step label */}
-                <span className="text-sm font-medium text-foreground">{detectionStep}</span>
-
-                {/* Percentage */}
-                <span className="text-xs text-muted-foreground">{Math.round(detectionProgress || 0)}%</span>
-              </div>
             </div>
           )}
         </div>
