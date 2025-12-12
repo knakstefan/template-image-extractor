@@ -1,6 +1,7 @@
 import { useCallback, useState, useEffect } from "react";
 import { Upload, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 interface ImageUploaderProps {
   onImageSelect: (file: File, preview: string) => void;
@@ -9,6 +10,7 @@ interface ImageUploaderProps {
 
 export function ImageUploader({ onImageSelect, disabled }: ImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [isPasting, setIsPasting] = useState(false);
 
   const handleFile = useCallback(
     (file: File) => {
@@ -65,7 +67,10 @@ export function ImageUploader({ onImageSelect, disabled }: ImageUploaderProps) {
             const namedFile = new File([file], `pasted-image-${Date.now()}.png`, {
               type: file.type,
             });
+            setIsPasting(true);
+            toast.success("Pasted from clipboard!");
             handleFile(namedFile);
+            setTimeout(() => setIsPasting(false), 600);
           }
           break;
         }
@@ -89,6 +94,7 @@ export function ImageUploader({ onImageSelect, disabled }: ImageUploaderProps) {
         isDragging
           ? "border-primary bg-primary/10 scale-[1.02] shadow-[0_0_30px_hsl(75,100%,50%,0.15)]"
           : "border-border hover:border-primary/60 hover:bg-card/80",
+        isPasting && "animate-paste-glow scale-[1.01] border-cyan-400",
         disabled && "pointer-events-none opacity-50"
       )}
     >

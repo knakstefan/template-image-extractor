@@ -8,7 +8,7 @@ import { useCropEditor } from "@/hooks/useCropEditor";
 import { cropImage, downloadBlob, downloadAllAsZip } from "@/lib/imageUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Scissors, Sparkles, Download, Wand2 } from "lucide-react";
+import { Sparkles, Download, Wand2 } from "lucide-react";
 
 export default function Index() {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -147,18 +147,19 @@ export default function Index() {
       </Helmet>
 
       <div className="min-h-screen bg-background">
-        <header className="border-b border-border/50 glass sticky top-0 z-50">
-          <div className="container py-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-primary/10 rounded-lg">
-                <Scissors className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">AI Image Cropper</h1>
-                <p className="text-sm text-muted-foreground">
-                  Extract images from screenshots & mockups
-                </p>
-              </div>
+        <header className="relative sticky top-0 z-50 overflow-hidden border-b border-border/30">
+          {/* Animated gradient background */}
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-cyan-500/15 to-emerald-500/20 bg-[length:200%_100%] animate-gradient-shift" />
+          <div className="absolute inset-0 bg-background/85 backdrop-blur-xl" />
+          
+          <div className="relative container py-5">
+            <div className="text-center md:text-left">
+              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-foreground via-cyan-300 to-primary bg-clip-text text-transparent">
+                AI Image Cropper
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                Extract images from screenshots & mockups
+              </p>
             </div>
           </div>
         </header>
