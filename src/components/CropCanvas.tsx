@@ -104,9 +104,10 @@ export function CropCanvas({
     if (imgRef.current && containerRef.current && scrollContainerRef.current) {
       const img = imgRef.current;
       setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+      // Pass natural dimensions for both - regions are stored in natural image coordinates
       onDimensionsReady(
         { width: img.naturalWidth, height: img.naturalHeight },
-        { width: img.clientWidth, height: img.clientHeight },
+        { width: img.naturalWidth, height: img.naturalHeight },
       );
       setContainerBounds(containerRef.current.getBoundingClientRect());
       
