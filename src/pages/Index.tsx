@@ -148,7 +148,7 @@ export default function Index() {
           <div className="absolute inset-0 bg-background/85 backdrop-blur-xl" />
 
           <div className="relative container py-5">
-            <div className="flex justify-center text-center md:text-left">
+            <div className="flex flex-col items-center justify-center text-center md:text-left">
               <h1 className="text-2xl md:text-3xl font-bold">
                 <span className="text-foreground">AI </span>
                 <span className="textGradientBlueToGreen">Image Extractor</span>
