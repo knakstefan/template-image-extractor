@@ -62,12 +62,13 @@ function detectOptimalFormat(ctx: CanvasRenderingContext2D, width: number, heigh
 async function canvasToOptimizedBlob(
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
-  forceFormat?: ImageFormat
+  forceFormat?: ImageFormat,
+  customQuality?: number
 ): Promise<OptimizationResult> {
   const format = forceFormat || detectOptimalFormat(ctx, canvas.width, canvas.height);
   
-  // Quality settings: WebP at 0.85 offers great quality with significant size reduction
-  const quality = format === 'png' ? undefined : 0.85;
+  // Quality settings: customQuality or default (0.85 for crops)
+  const quality = format === 'png' ? undefined : (customQuality ?? 0.85);
   const mimeType = `image/${format}`;
   
   return new Promise((resolve, reject) => {
@@ -87,6 +88,31 @@ async function canvasToOptimizedBlob(
       quality
     );
   });
+}
+
+/**
+ * Optimizes the template/original image with high-quality compression
+ */
+async function optimizeTemplate(
+  originalFile: File,
+  forceFormat?: ImageFormat
+): Promise<OptimizationResult> {
+  const imageSrc = await fileToBase64(originalFile);
+  const img = await loadImage(imageSrc);
+  
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("Could not get canvas context");
+  
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, 0, 0);
+  
+  // Use higher quality (0.92) for template to preserve source quality
+  return canvasToOptimizedBlob(canvas, ctx, forceFormat, 0.92);
 }
 
 export async function cropImage(
@@ -147,9 +173,9 @@ export async function downloadAllAsZip(
 ): Promise<void> {
   const zip = new JSZip();
 
-  // Add the original file directly - preserves 100% quality
-  const extension = originalFile.name.split('.').pop()?.toLowerCase() || 'png';
-  zip.file(`template.${extension}`, originalFile);
+  // Optimize the template file with high-quality compression
+  const templateResult = await optimizeTemplate(originalFile);
+  zip.file(`template.${templateResult.extension}`, templateResult.blob);
 
   // Add all cropped regions with optimized format selection
   for (let i = 0; i < regions.length; i++) {
