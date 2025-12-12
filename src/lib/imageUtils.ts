@@ -100,16 +100,29 @@ async function optimizeTemplate(
   const imageSrc = await fileToBase64(originalFile);
   const img = await loadImage(imageSrc);
   
+  // Maximum height constraint to avoid platform/browser limitations
+  const MAX_HEIGHT = 4096;
+  
+  let targetWidth = img.naturalWidth;
+  let targetHeight = img.naturalHeight;
+  
+  // Scale down if height exceeds maximum, maintaining aspect ratio
+  if (targetHeight > MAX_HEIGHT) {
+    const scale = MAX_HEIGHT / targetHeight;
+    targetWidth = Math.round(targetWidth * scale);
+    targetHeight = MAX_HEIGHT;
+  }
+  
   const canvas = document.createElement("canvas");
-  canvas.width = img.naturalWidth;
-  canvas.height = img.naturalHeight;
+  canvas.width = targetWidth;
+  canvas.height = targetHeight;
   
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Could not get canvas context");
   
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, 0, 0);
+  ctx.drawImage(img, 0, 0, targetWidth, targetHeight);
   
   // Use higher quality (0.92) for template to preserve source quality
   return canvasToOptimizedBlob(canvas, ctx, forceFormat, 0.92);
