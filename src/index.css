@@ -115,4 +115,11 @@
   .glass {
     @apply bg-card/60 backdrop-blur-xl border border-white/5;
   }
+
+  .textGradientBlueToGreen {
+    background: linear-gradient(90deg, #00D4FF 0%, #7FFF00 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
