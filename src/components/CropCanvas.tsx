@@ -304,13 +304,13 @@ export function CropCanvas({
         <div
           ref={containerRef}
           className={cn(
-            "relative inline-block origin-top-left",
+            "relative",
             isDetecting ? "cursor-default" : "cursor-crosshair",
             isDrawing && "select-none",
           )}
           style={{
-            transform: `scale(${currentZoom})`,
-            transformOrigin: "top left",
+            width: imageDimensions.width * currentZoom,
+            height: imageDimensions.height * currentZoom,
             marginLeft: scrollContainerRef.current 
               ? Math.max(0, (scrollContainerRef.current.clientWidth - imageDimensions.width * currentZoom) / 2) 
               : 0,
@@ -325,6 +325,10 @@ export function CropCanvas({
             src={imageSrc}
             alt="Template"
             className="max-w-none object-contain"
+            style={{
+              width: imageDimensions.width * currentZoom,
+              height: imageDimensions.height * currentZoom,
+            }}
             onLoad={handleImageLoad}
             draggable={false}
           />
@@ -349,10 +353,10 @@ export function CropCanvas({
             <div
               className="absolute border-2 border-dashed border-accent bg-accent/10 pointer-events-none"
               style={{
-                left: drawRect.x,
-                top: drawRect.y,
-                width: drawRect.width,
-                height: drawRect.height,
+                left: drawRect.x * currentZoom,
+                top: drawRect.y * currentZoom,
+                width: drawRect.width * currentZoom,
+                height: drawRect.height * currentZoom,
               }}
             />
           )}
