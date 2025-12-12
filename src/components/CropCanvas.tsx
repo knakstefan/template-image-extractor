@@ -184,15 +184,14 @@ export function CropCanvas({
       {/* Header with instructions/zoom OR detection progress */}
       <div className="flex items-center justify-between gap-4 min-h-[32px]">
         {isDetecting ? (
-          <div className="flex items-center justify-center gap-6 flex-1">
-            <Loader2 className="w-5 h-5 animate-spin text-primary flex-shrink-0" />
+          <div className="flex flex-col items-center justify-center gap-2 flex-1">
             <div className="flex-1 max-w-md">
               <Progress value={detectionProgress} className="h-2" />
+              <span className="text-sm text-muted-foreground whitespace-nowrap">
+                {Math.round(detectionProgress || 0)}%
+              </span>
             </div>
             <span className="text-sm font-medium text-foreground whitespace-nowrap">{detectionStep}</span>
-            <span className="text-sm text-muted-foreground whitespace-nowrap">
-              {Math.round(detectionProgress || 0)}%
-            </span>
           </div>
         ) : (
           <>
