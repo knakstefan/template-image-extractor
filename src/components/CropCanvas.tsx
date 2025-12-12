@@ -71,16 +71,16 @@ export function CropCanvas({
   // Scroll to region when scrollToRegionId changes
   useEffect(() => {
     if (scrollToRegionId && scrollContainerRef.current) {
-      const region = regions.find(r => r.id === scrollToRegionId);
+      const region = regions.find((r) => r.id === scrollToRegionId);
       if (region) {
         const container = scrollContainerRef.current;
-        const scrollLeft = (region.x * zoomLevel) - (container.clientWidth / 2) + ((region.width * zoomLevel) / 2);
-        const scrollTop = (region.y * zoomLevel) - (container.clientHeight / 2) + ((region.height * zoomLevel) / 2);
-        
+        const scrollLeft = region.x * zoomLevel - container.clientWidth / 2 + (region.width * zoomLevel) / 2;
+        const scrollTop = region.y * zoomLevel - container.clientHeight / 2 + (region.height * zoomLevel) / 2;
+
         container.scrollTo({
           left: Math.max(0, scrollLeft),
           top: Math.max(0, scrollTop),
-          behavior: 'smooth'
+          behavior: "smooth",
         });
       }
     }
@@ -92,7 +92,7 @@ export function CropCanvas({
       setImageDimensions({ width: img.clientWidth, height: img.clientHeight });
       onDimensionsReady(
         { width: img.naturalWidth, height: img.naturalHeight },
-        { width: img.clientWidth, height: img.clientHeight }
+        { width: img.clientWidth, height: img.clientHeight },
       );
       setContainerBounds(containerRef.current.getBoundingClientRect());
     }
@@ -103,7 +103,7 @@ export function CropCanvas({
     if (e.metaKey || e.ctrlKey) {
       e.preventDefault();
       const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
-      setZoomLevel(prev => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, prev + delta)));
+      setZoomLevel((prev) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, prev + delta)));
     }
   }, []);
 
@@ -122,39 +122,45 @@ export function CropCanvas({
     return () => container.removeEventListener("wheel", handleNativeWheel);
   }, []);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (isDetecting) return;
-    if (e.target !== containerRef.current && e.target !== imgRef.current) return;
-    
-    onSelectRegion(null);
-    
-    const rect = containerRef.current?.getBoundingClientRect();
-    if (!rect) return;
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (isDetecting) return;
+      if (e.target !== containerRef.current && e.target !== imgRef.current) return;
 
-    // Adjust coordinates for zoom level
-    const x = (e.clientX - rect.left) / zoomLevel;
-    const y = (e.clientY - rect.top) / zoomLevel;
+      onSelectRegion(null);
 
-    setIsDrawing(true);
-    setDrawStart({ x, y });
-    setDrawRect({ x, y, width: 0, height: 0 });
-  }, [onSelectRegion, zoomLevel, isDetecting]);
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
 
-  const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isDrawing || !containerRef.current) return;
+      // Adjust coordinates for zoom level
+      const x = (e.clientX - rect.left) / zoomLevel;
+      const y = (e.clientY - rect.top) / zoomLevel;
 
-    const rect = containerRef.current.getBoundingClientRect();
-    // Adjust for zoom level
-    const currentX = Math.max(0, Math.min((e.clientX - rect.left) / zoomLevel, imageDimensions.width));
-    const currentY = Math.max(0, Math.min((e.clientY - rect.top) / zoomLevel, imageDimensions.height));
+      setIsDrawing(true);
+      setDrawStart({ x, y });
+      setDrawRect({ x, y, width: 0, height: 0 });
+    },
+    [onSelectRegion, zoomLevel, isDetecting],
+  );
 
-    const x = Math.min(drawStart.x, currentX);
-    const y = Math.min(drawStart.y, currentY);
-    const width = Math.abs(currentX - drawStart.x);
-    const height = Math.abs(currentY - drawStart.y);
+  const handleMouseMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!isDrawing || !containerRef.current) return;
 
-    setDrawRect({ x, y, width, height });
-  }, [isDrawing, drawStart, zoomLevel, imageDimensions]);
+      const rect = containerRef.current.getBoundingClientRect();
+      // Adjust for zoom level
+      const currentX = Math.max(0, Math.min((e.clientX - rect.left) / zoomLevel, imageDimensions.width));
+      const currentY = Math.max(0, Math.min((e.clientY - rect.top) / zoomLevel, imageDimensions.height));
+
+      const x = Math.min(drawStart.x, currentX);
+      const y = Math.min(drawStart.y, currentY);
+      const width = Math.abs(currentX - drawStart.x);
+      const height = Math.abs(currentY - drawStart.y);
+
+      setDrawRect({ x, y, width, height });
+    },
+    [isDrawing, drawStart, zoomLevel, imageDimensions],
+  );
 
   const handleMouseUp = useCallback(() => {
     if (isDrawing && drawRect && drawRect.width > 20 && drawRect.height > 20) {
@@ -169,8 +175,8 @@ export function CropCanvas({
     setDrawRect(null);
   }, [isDrawing, drawRect, onAddRegion]);
 
-  const handleZoomIn = () => setZoomLevel(prev => Math.min(MAX_ZOOM, prev + ZOOM_STEP));
-  const handleZoomOut = () => setZoomLevel(prev => Math.max(MIN_ZOOM, prev - ZOOM_STEP));
+  const handleZoomIn = () => setZoomLevel((prev) => Math.min(MAX_ZOOM, prev + ZOOM_STEP));
+  const handleZoomOut = () => setZoomLevel((prev) => Math.max(MIN_ZOOM, prev - ZOOM_STEP));
   const handleResetZoom = () => setZoomLevel(1);
 
   return (
@@ -178,14 +184,12 @@ export function CropCanvas({
       {/* Header with instructions/zoom OR detection progress */}
       <div className="flex items-center justify-between gap-4 min-h-[32px]">
         {isDetecting ? (
-          <div className="flex items-center gap-4 flex-1">
+          <div className="flex items-center justify-center gap-6 flex-1">
             <Loader2 className="w-5 h-5 animate-spin text-primary flex-shrink-0" />
             <div className="flex-1 max-w-md">
               <Progress value={detectionProgress} className="h-2" />
             </div>
-            <span className="text-sm font-medium text-foreground whitespace-nowrap">
-              {detectionStep}
-            </span>
+            <span className="text-sm font-medium text-foreground whitespace-nowrap">{detectionStep}</span>
             <span className="text-sm text-muted-foreground whitespace-nowrap">
               {Math.round(detectionProgress || 0)}%
             </span>
@@ -196,7 +200,7 @@ export function CropCanvas({
               <Plus className="w-4 h-4" />
               <span>Click and drag to add crop regions. Hold ⌘/Ctrl + scroll to zoom.</span>
             </div>
-            
+
             {/* Zoom controls */}
             <div className="flex items-center gap-2">
               <Button
@@ -208,11 +212,11 @@ export function CropCanvas({
               >
                 <ZoomOut className="h-4 w-4" />
               </Button>
-              
+
               <div className="min-w-[60px] text-center text-sm font-medium text-muted-foreground">
                 {Math.round(zoomLevel * 100)}%
               </div>
-              
+
               <Button
                 variant="outline"
                 size="icon"
@@ -222,7 +226,7 @@ export function CropCanvas({
               >
                 <ZoomIn className="h-4 w-4" />
               </Button>
-              
+
               <Button
                 variant="outline"
                 size="icon"
@@ -243,13 +247,13 @@ export function CropCanvas({
         className="overflow-auto max-h-[70vh] rounded-lg border border-border bg-muted/30"
         onWheel={handleWheel}
       >
-          <div
-            ref={containerRef}
-            className={cn(
-              "relative inline-block origin-top-left",
-              isDetecting ? "cursor-default" : "cursor-crosshair",
-              isDrawing && "select-none"
-            )}
+        <div
+          ref={containerRef}
+          className={cn(
+            "relative inline-block origin-top-left",
+            isDetecting ? "cursor-default" : "cursor-crosshair",
+            isDrawing && "select-none",
+          )}
           style={{
             transform: `scale(${zoomLevel})`,
             transformOrigin: "top left",
