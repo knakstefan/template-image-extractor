@@ -131,25 +131,33 @@ export function CropCanvas({
       const container = scrollContainerRef.current;
       if (!container || zoomLevel === null) return;
       
-      // Get cursor position relative to scroll container
+      // Get cursor position relative to scroll container viewport
       const rect = container.getBoundingClientRect();
       const cursorX = e.clientX - rect.left;
       const cursorY = e.clientY - rect.top;
       
-      // Calculate the point in the image under the cursor (before zoom)
-      const imageX = (container.scrollLeft + cursorX) / zoomLevel;
+      // Account for centering margin
+      const scaledWidth = imageDimensions.width * zoomLevel;
+      const marginLeft = Math.max(0, (container.clientWidth - scaledWidth) / 2);
+      
+      // Calculate the point in the image under the cursor (in image coordinates)
+      const imageX = (container.scrollLeft + cursorX - marginLeft) / zoomLevel;
       const imageY = (container.scrollTop + cursorY) / zoomLevel;
       
       // Calculate new zoom level
       const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
       const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel + delta));
       
-      // Update zoom
-      setZoomLevel(newZoom);
+      // Calculate new margin for the new zoom level
+      const newScaledWidth = imageDimensions.width * newZoom;
+      const newMarginLeft = Math.max(0, (container.clientWidth - newScaledWidth) / 2);
       
       // Calculate new scroll position to keep cursor over same image point
-      const newScrollLeft = imageX * newZoom - cursorX;
+      const newScrollLeft = imageX * newZoom - cursorX + newMarginLeft;
       const newScrollTop = imageY * newZoom - cursorY;
+      
+      // Update zoom
+      setZoomLevel(newZoom);
       
       // Apply scroll after state update
       requestAnimationFrame(() => {
@@ -157,7 +165,7 @@ export function CropCanvas({
         container.scrollTop = Math.max(0, newScrollTop);
       });
     }
-  }, [zoomLevel]);
+  }, [zoomLevel, imageDimensions.width]);
 
   // Also need native event listener for preventing default
   useEffect(() => {
