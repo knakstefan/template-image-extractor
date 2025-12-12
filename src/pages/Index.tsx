@@ -150,7 +150,7 @@ export default function Index() {
           <div className="relative container py-5">
             <div className="text-center md:text-left">
               <h1 className="text-2xl md:text-3xl font-bold">
-                <span className="text-foreground textGradientBlueToGreen">AI </span>
+                <span className="text-foreground">AI </span>
                 <span className="textGradientBlueToGreen">Image Extractor</span>
               </h1>
               <p className="text-sm text-muted-foreground mt-1">Extract images from screenshots & mockups</p>
@@ -162,7 +162,7 @@ export default function Index() {
           {!imageSrc ? (
             <div className="max-w-2xl mx-auto space-y-8">
               <div className="text-center space-y-4">
-                <h2 className="text-3xl font-bold text-foreground">Extract Images with AI</h2>
+                <h2 className="text-3xl font-bold text-foreground">Extract Images from Image templates using AI</h2>
                 <p className="text-lg text-muted-foreground max-w-md mx-auto">
                   Upload a screenshot or mockup, and our AI will automatically detect and extract all embedded images.
                 </p>
