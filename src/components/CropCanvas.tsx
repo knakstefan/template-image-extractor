@@ -93,10 +93,10 @@ export function CropCanvas({
     const scrollContainer = scrollContainerRef.current;
     const padding = 40;
     
+    // Use width-based fit only
     const scaleX = (scrollContainer.clientWidth - padding) / img.naturalWidth;
-    const scaleY = (scrollContainer.clientHeight - padding) / img.naturalHeight;
     
-    const fitZoom = Math.min(scaleX, scaleY, 1);
+    const fitZoom = Math.min(scaleX, 1);
     return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, fitZoom));
   }, []);
 
@@ -110,14 +110,13 @@ export function CropCanvas({
       );
       setContainerBounds(containerRef.current.getBoundingClientRect());
       
-      // Calculate fit-to-view zoom
+      // Calculate fit-to-view zoom (width-based)
       const scrollContainer = scrollContainerRef.current;
       const padding = 40;
       
       const scaleX = (scrollContainer.clientWidth - padding) / img.naturalWidth;
-      const scaleY = (scrollContainer.clientHeight - padding) / img.naturalHeight;
       
-      const fitZoom = Math.min(scaleX, scaleY, 1);
+      const fitZoom = Math.min(scaleX, 1);
       const clampedZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, fitZoom));
       
       setZoomLevel(clampedZoom);
@@ -299,7 +298,7 @@ export function CropCanvas({
       {/* Scrollable zoom container */}
       <div
         ref={scrollContainerRef}
-        className="overflow-auto max-h-[70vh] rounded-lg border border-border bg-muted/30"
+        className="overflow-auto max-h-[70vh] rounded-lg border border-border bg-muted/30 flex justify-center"
         onWheel={handleWheel}
       >
         <div
