@@ -186,7 +186,7 @@ export function CropCanvas({
         {isDetecting ? (
           <div className="flex flex-col items-center justify-center gap-2 flex-1">
             <div className="flex-1 max-w-md">
-              <Progress value={detectionProgress} className="h-2" />
+              <Progress value={detectionProgress} className="h-2 w-full" />
               <span className="text-sm text-muted-foreground whitespace-nowrap">
                 {Math.round(detectionProgress || 0)}%
               </span>
