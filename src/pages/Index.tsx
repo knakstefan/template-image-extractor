@@ -227,7 +227,7 @@ export default function Index() {
                     <h3 className="font-semibold text-foreground mb-4">Selected Images ({regions.length})</h3>
                     {regions.length === 0 ? (
                       <p className="text-sm text-muted-foreground text-center py-8">
-                        Click "Detect Images" or draw regions manually
+                        Click "Scan for images" or draw regions manually
                       </p>
                     ) : (
                       <div className="grid grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">
