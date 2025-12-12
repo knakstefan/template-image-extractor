@@ -8,7 +8,7 @@ import { useCropEditor } from "@/hooks/useCropEditor";
 import { cropImage, downloadBlob, downloadAllAsZip } from "@/lib/imageUtils";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Sparkles, Download, Wand2 } from "lucide-react";
+import { Sparkles, Slice, Download, Wand2 } from "lucide-react";
 
 export default function Index() {
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -172,7 +172,7 @@ export default function Index() {
   return (
     <>
       <Helmet>
-        <title>AI Image Extractor - Extract Images from Screenshots & Mockups</title>
+        <title>AI Image Slicer - Extract Images from Screenshots & Mockups</title>
         <meta
           name="description"
           content="Upload screenshots or mockups and let AI automatically detect and crop embedded images. Download individually or as a batch ZIP file."
@@ -188,8 +188,8 @@ export default function Index() {
           <div className="relative container py-8">
             <div className="flex flex-col items-center justify-center text-center md:text-left">
               <h1 className="flex items-center gap-2 text-3xl md:text-3xl font-bold">
-                <Sparkles />
-                <span className="textGradientBlueToGreen">Image Extractor</span>
+                <Slice />
+                <span className="textGradientBlueToGreen">Image Slicer</span>
               </h1>
               <p className="text-sm text-muted-foreground mt-1">Extract images from screenshots & mockups</p>
             </div>
@@ -201,7 +201,7 @@ export default function Index() {
             <div className="max-w-2xl mx-auto space-y-8">
               <div className="text-center space-y-4">
                 <p className="text-lg text-muted-foreground max-w-md mx-auto">
-                  Upload or copy & paste a screenshot or mockup, and AI will detect and extract all embedded images.
+                  Upload or copy & paste a screenshot or mockup, and AI will scan and extract all embedded images.
                 </p>
               </div>
 
