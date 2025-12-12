@@ -52,15 +52,15 @@ export default function Index() {
       setDetectionProgress((prev) => {
         if (prev < 30) {
           setDetectionStep("Preparing image...");
-          return prev + 0.8;  // 0→30% in ~7.5 seconds
+          return prev + 0.4; // 0→30% in ~15 seconds (was 7.5s)
         } else if (prev < 70) {
           setDetectionStep("Analyzing content...");
-          return prev + 0.5;  // 30→70% in ~16 seconds
+          return prev + 0.25; // 30→70% in ~32 seconds (was 16s)
         } else if (prev < 99) {
           setDetectionStep("Detecting regions...");
-          return prev + 0.2;  // 70→99% in ~29 seconds
+          return prev + 0.1; // 70→99% in ~58 seconds (was 29s)
         }
-        return 99;  // Pause at 99%, not before
+        return 99;
       });
     }, 200);
 
