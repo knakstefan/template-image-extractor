@@ -60,7 +60,7 @@ export default function Index() {
 
       if (data.regions && data.regions.length > 0) {
         resetRegions(data.regions);
-        toast.success(`Detected ${data.regions.length} image(s)!`);
+        toast.success(`Selected ${data.regions.length} image(s)!`);
       } else {
         toast.info("No embedded images detected. Try adding regions manually.");
       }
@@ -222,7 +222,7 @@ export default function Index() {
 
                 <div className="space-y-4">
                   <div className="glass rounded-xl p-4">
-                    <h3 className="font-semibold text-foreground mb-4">Detected Images ({regions.length})</h3>
+                    <h3 className="font-semibold text-foreground mb-4">Selected Images ({regions.length})</h3>
                     {regions.length === 0 ? (
                       <p className="text-sm text-muted-foreground text-center py-8">
                         Click "Detect Images" or draw regions manually
