@@ -163,7 +163,7 @@ export default function Index() {
             <div className="max-w-2xl mx-auto space-y-8">
               <div className="text-center space-y-4">
                 <p className="text-lg text-muted-foreground max-w-md mx-auto">
-                  Upload a screenshot or mockup, and our AI will automatically detect and extract all embedded images.
+                  Upload or copy & paste a screenshot or mockup, and AI will detect and extract all embedded images.
                 </p>
               </div>
 
