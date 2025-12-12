@@ -298,7 +298,7 @@ export function CropCanvas({
       {/* Scrollable zoom container */}
       <div
         ref={scrollContainerRef}
-        className="overflow-auto max-h-[70vh] rounded-lg border border-border bg-muted/30 flex justify-center"
+        className="overflow-auto max-h-[70vh] rounded-lg border border-border bg-muted/30"
         onWheel={handleWheel}
       >
         <div
@@ -311,6 +311,9 @@ export function CropCanvas({
           style={{
             transform: `scale(${currentZoom})`,
             transformOrigin: "top left",
+            marginLeft: scrollContainerRef.current 
+              ? Math.max(0, (scrollContainerRef.current.clientWidth - imageDimensions.width * currentZoom) / 2) 
+              : 0,
           }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
