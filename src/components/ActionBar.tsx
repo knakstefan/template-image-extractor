@@ -16,7 +16,7 @@ export function ActionBar({ onDetect, onDownloadAll, onReset, isDetecting, hasRe
       <div className="flex items-center gap-3">
         <Button onClick={onDetect} disabled={!hasImage || isDetecting} className="gap-2">
           {isDetecting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {isDetecting ? "Scanning for images..." : "Scan for Images"}
+          {isDetecting ? "Scanning for images..." : "Scan for images"}
         </Button>
         <Button variant="outline" onClick={onReset} disabled={!hasImage} className="gap-2">
           <RotateCcw className="w-4 h-4" />
