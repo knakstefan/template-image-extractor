@@ -9,6 +9,7 @@ interface CropCanvasProps {
   imageSrc: string;
   regions: CropRegion[];
   selectedId: string | null;
+  scrollToRegionId?: string | null;
   onSelectRegion: (id: string | null) => void;
   onUpdateRegion: (id: string, updates: Partial<CropRegion>) => void;
   onDeleteRegion: (id: string) => void;
@@ -24,6 +25,7 @@ export function CropCanvas({
   imageSrc,
   regions,
   selectedId,
+  scrollToRegionId,
   onSelectRegion,
   onUpdateRegion,
   onDeleteRegion,
@@ -58,6 +60,24 @@ export function CropCanvas({
       setContainerBounds(containerRef.current.getBoundingClientRect());
     }
   }, [zoomLevel]);
+
+  // Scroll to region when scrollToRegionId changes
+  useEffect(() => {
+    if (scrollToRegionId && scrollContainerRef.current) {
+      const region = regions.find(r => r.id === scrollToRegionId);
+      if (region) {
+        const container = scrollContainerRef.current;
+        const scrollLeft = (region.x * zoomLevel) - (container.clientWidth / 2) + ((region.width * zoomLevel) / 2);
+        const scrollTop = (region.y * zoomLevel) - (container.clientHeight / 2) + ((region.height * zoomLevel) / 2);
+        
+        container.scrollTo({
+          left: Math.max(0, scrollLeft),
+          top: Math.max(0, scrollTop),
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [scrollToRegionId, regions, zoomLevel]);
 
   const handleImageLoad = useCallback(() => {
     if (imgRef.current && containerRef.current) {
