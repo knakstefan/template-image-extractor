@@ -39,13 +39,11 @@ export function CropPreview({
       try {
         const img = await loadImage(imageSrc);
         
-        const scaleX = originalWidth / displayWidth;
-        const scaleY = originalHeight / displayHeight;
-        
-        const x = Math.round(region.x * scaleX);
-        const y = Math.round(region.y * scaleY);
-        const width = Math.round(region.width * scaleX);
-        const height = Math.round(region.height * scaleY);
+        // Regions are stored in natural image coordinates - use directly
+        const x = Math.round(region.x);
+        const y = Math.round(region.y);
+        const width = Math.round(region.width);
+        const height = Math.round(region.height);
 
         // Optimize preview size - max 300px for thumbnails (2x for retina)
         const maxPreviewSize = 300;
