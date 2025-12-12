@@ -239,6 +239,7 @@ export default function Index() {
                 isDetecting={isDetecting}
                 hasRegions={regions.length > 0}
                 hasImage={!!imageSrc}
+                imageName={imageFile?.name}
               />
 
               <div className="grid lg:grid-cols-[1fr,320px] gap-6">
