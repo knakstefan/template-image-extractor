@@ -91,12 +91,23 @@ export default {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        "gradient-shift": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
+        "paste-glow": {
+          "0%": { boxShadow: "0 0 0 0 hsl(180 100% 45% / 0.5)" },
+          "50%": { boxShadow: "0 0 25px 5px hsl(180 100% 45% / 0.6)" },
+          "100%": { boxShadow: "0 0 0 0 hsl(180 100% 45% / 0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "pulse-border": "pulse-border 2s ease-in-out infinite",
         shimmer: "shimmer 2s linear infinite",
+        "gradient-shift": "gradient-shift 8s ease infinite",
+        "paste-glow": "paste-glow 0.5s ease-out",
       },
     },
   },
