@@ -127,10 +127,10 @@ export function CropOverlay({
         (isDragging || isResizing) && "cursor-grabbing"
       )}
       style={{
-        left: region.x,
-        top: region.y,
-        width: region.width,
-        height: region.height,
+        left: region.x * zoomLevel,
+        top: region.y * zoomLevel,
+        width: region.width * zoomLevel,
+        height: region.height * zoomLevel,
       }}
       onMouseDown={(e) => handleMouseDown(e)}
     >
