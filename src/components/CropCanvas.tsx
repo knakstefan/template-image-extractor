@@ -46,7 +46,7 @@ export function CropCanvas({
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawStart, setDrawStart] = useState({ x: 0, y: 0 });
   const [drawRect, setDrawRect] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState<number | null>(null);
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
@@ -70,7 +70,7 @@ export function CropCanvas({
 
   // Scroll to region when scrollToRegionId changes
   useEffect(() => {
-    if (scrollToRegionId && scrollContainerRef.current) {
+    if (scrollToRegionId && scrollContainerRef.current && zoomLevel !== null) {
       const region = regions.find((r) => r.id === scrollToRegionId);
       if (region) {
         const container = scrollContainerRef.current;
@@ -86,26 +86,79 @@ export function CropCanvas({
     }
   }, [scrollToRegionId, regions, zoomLevel]);
 
+  const calculateFitZoom = useCallback(() => {
+    if (!imgRef.current || !scrollContainerRef.current) return 1;
+    
+    const img = imgRef.current;
+    const scrollContainer = scrollContainerRef.current;
+    const padding = 40;
+    
+    const scaleX = (scrollContainer.clientWidth - padding) / img.naturalWidth;
+    const scaleY = (scrollContainer.clientHeight - padding) / img.naturalHeight;
+    
+    const fitZoom = Math.min(scaleX, scaleY, 1);
+    return Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, fitZoom));
+  }, []);
+
   const handleImageLoad = useCallback(() => {
-    if (imgRef.current && containerRef.current) {
+    if (imgRef.current && containerRef.current && scrollContainerRef.current) {
       const img = imgRef.current;
-      setImageDimensions({ width: img.clientWidth, height: img.clientHeight });
+      setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
       onDimensionsReady(
         { width: img.naturalWidth, height: img.naturalHeight },
         { width: img.clientWidth, height: img.clientHeight },
       );
       setContainerBounds(containerRef.current.getBoundingClientRect());
+      
+      // Calculate fit-to-view zoom
+      const scrollContainer = scrollContainerRef.current;
+      const padding = 40;
+      
+      const scaleX = (scrollContainer.clientWidth - padding) / img.naturalWidth;
+      const scaleY = (scrollContainer.clientHeight - padding) / img.naturalHeight;
+      
+      const fitZoom = Math.min(scaleX, scaleY, 1);
+      const clampedZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, fitZoom));
+      
+      setZoomLevel(clampedZoom);
     }
   }, [onDimensionsReady]);
 
-  // Handle Cmd/Ctrl + scroll wheel for zoom
+  // Handle Cmd/Ctrl + scroll wheel for zoom (cursor-centered)
   const handleWheel = useCallback((e: React.WheelEvent) => {
     if (e.metaKey || e.ctrlKey) {
       e.preventDefault();
+      
+      const container = scrollContainerRef.current;
+      if (!container || zoomLevel === null) return;
+      
+      // Get cursor position relative to scroll container
+      const rect = container.getBoundingClientRect();
+      const cursorX = e.clientX - rect.left;
+      const cursorY = e.clientY - rect.top;
+      
+      // Calculate the point in the image under the cursor (before zoom)
+      const imageX = (container.scrollLeft + cursorX) / zoomLevel;
+      const imageY = (container.scrollTop + cursorY) / zoomLevel;
+      
+      // Calculate new zoom level
       const delta = e.deltaY > 0 ? -ZOOM_STEP : ZOOM_STEP;
-      setZoomLevel((prev) => Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, prev + delta)));
+      const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoomLevel + delta));
+      
+      // Update zoom
+      setZoomLevel(newZoom);
+      
+      // Calculate new scroll position to keep cursor over same image point
+      const newScrollLeft = imageX * newZoom - cursorX;
+      const newScrollTop = imageY * newZoom - cursorY;
+      
+      // Apply scroll after state update
+      requestAnimationFrame(() => {
+        container.scrollLeft = Math.max(0, newScrollLeft);
+        container.scrollTop = Math.max(0, newScrollTop);
+      });
     }
-  }, []);
+  }, [zoomLevel]);
 
   // Also need native event listener for preventing default
   useEffect(() => {
@@ -133,8 +186,9 @@ export function CropCanvas({
       if (!rect) return;
 
       // Adjust coordinates for zoom level
-      const x = (e.clientX - rect.left) / zoomLevel;
-      const y = (e.clientY - rect.top) / zoomLevel;
+      const effectiveZoom = zoomLevel ?? 1;
+      const x = (e.clientX - rect.left) / effectiveZoom;
+      const y = (e.clientY - rect.top) / effectiveZoom;
 
       setIsDrawing(true);
       setDrawStart({ x, y });
@@ -149,8 +203,9 @@ export function CropCanvas({
 
       const rect = containerRef.current.getBoundingClientRect();
       // Adjust for zoom level
-      const currentX = Math.max(0, Math.min((e.clientX - rect.left) / zoomLevel, imageDimensions.width));
-      const currentY = Math.max(0, Math.min((e.clientY - rect.top) / zoomLevel, imageDimensions.height));
+      const effectiveZoom = zoomLevel ?? 1;
+      const currentX = Math.max(0, Math.min((e.clientX - rect.left) / effectiveZoom, imageDimensions.width));
+      const currentY = Math.max(0, Math.min((e.clientY - rect.top) / effectiveZoom, imageDimensions.height));
 
       const x = Math.min(drawStart.x, currentX);
       const y = Math.min(drawStart.y, currentY);
@@ -175,9 +230,10 @@ export function CropCanvas({
     setDrawRect(null);
   }, [isDrawing, drawRect, onAddRegion]);
 
-  const handleZoomIn = () => setZoomLevel((prev) => Math.min(MAX_ZOOM, prev + ZOOM_STEP));
-  const handleZoomOut = () => setZoomLevel((prev) => Math.max(MIN_ZOOM, prev - ZOOM_STEP));
-  const handleResetZoom = () => setZoomLevel(1);
+  const currentZoom = zoomLevel ?? 1;
+  const handleZoomIn = () => setZoomLevel(Math.min(MAX_ZOOM, currentZoom + ZOOM_STEP));
+  const handleZoomOut = () => setZoomLevel(Math.max(MIN_ZOOM, currentZoom - ZOOM_STEP));
+  const handleResetZoom = () => setZoomLevel(calculateFitZoom());
 
   return (
     <div className="relative flex flex-col gap-2">
@@ -207,13 +263,13 @@ export function CropCanvas({
                 size="icon"
                 className="h-8 w-8"
                 onClick={handleZoomOut}
-                disabled={zoomLevel <= MIN_ZOOM}
+                disabled={currentZoom <= MIN_ZOOM}
               >
                 <ZoomOut className="h-4 w-4" />
               </Button>
 
               <div className="min-w-[60px] text-center text-sm font-medium text-muted-foreground">
-                {Math.round(zoomLevel * 100)}%
+                {Math.round(currentZoom * 100)}%
               </div>
 
               <Button
@@ -221,7 +277,7 @@ export function CropCanvas({
                 size="icon"
                 className="h-8 w-8"
                 onClick={handleZoomIn}
-                disabled={zoomLevel >= MAX_ZOOM}
+                disabled={currentZoom >= MAX_ZOOM}
               >
                 <ZoomIn className="h-4 w-4" />
               </Button>
@@ -231,7 +287,7 @@ export function CropCanvas({
                 size="icon"
                 className="h-8 w-8"
                 onClick={handleResetZoom}
-                disabled={zoomLevel === 1}
+                disabled={currentZoom === calculateFitZoom()}
               >
                 <RotateCcw className="h-4 w-4" />
               </Button>
@@ -254,7 +310,7 @@ export function CropCanvas({
             isDrawing && "select-none",
           )}
           style={{
-            transform: `scale(${zoomLevel})`,
+            transform: `scale(${currentZoom})`,
             transformOrigin: "top left",
           }}
           onMouseDown={handleMouseDown}
@@ -282,7 +338,7 @@ export function CropCanvas({
               onDelete={() => onDeleteRegion(region.id)}
               containerBounds={containerBounds}
               index={index}
-              zoomLevel={zoomLevel}
+              zoomLevel={currentZoom}
             />
           ))}
 
