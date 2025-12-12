@@ -244,7 +244,7 @@ export default function Index() {
               />
 
               <div className="grid lg:grid-cols-[1fr,320px] gap-6">
-                <div className="space-y-4 max-w-3xl">
+                <div className="space-y-4 max-w-7xl">
                   <div className="glass rounded-xl p-4">
                     <CropCanvas
                       imageSrc={imageSrc}
